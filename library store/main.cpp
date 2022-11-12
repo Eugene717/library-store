@@ -1,28 +1,20 @@
-#include <SFML/Graphics.hpp>
-#include <fstream>
 #include "ArchiveSystem.h"
 
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(1280, 720), "Library");
 	sf::Event event;
 
-	sf::Font font;
-	font.loadFromFile("resourses/arial.ttf");
+	ArchiveSystem* archive = ArchiveSystem::GetInstance();
 
-	std::fstream fin("resourses/recordings.dat", std::ios::in | std::ios::out | std::ios::app);
-	if (fin.is_open());
-
-	while(window.isOpen())
+	while(archive->m_window.isOpen())
 	{
-		while (window.pollEvent(event))
+		while (archive->m_window.pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed)
-				window.close();
+				archive->m_window.close();
 		}
-		window.clear(sf::Color::White);
 
-		window.display();
+		archive->Do();
 	}
 
 	return 0;

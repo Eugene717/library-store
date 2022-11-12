@@ -145,12 +145,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ArchiveSystem.cpp" />
-    <ClCompile Include="Decorator.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArchiveSystem.h" />
-    <ClInclude Include="Decorator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
