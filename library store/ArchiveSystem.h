@@ -13,13 +13,15 @@ class ArchiveSystem
 	ArchiveSystem();
 	ArchiveSystem(const ArchiveSystem&) = delete;
 	ArchiveSystem& operator=(const ArchiveSystem&) = delete;
+
+	void PlaceElements();
+	void Move(const bool up);
 public:
 	sf::RenderWindow m_window;
 	static ArchiveSystem* GetInstance();
 
-	auto& operator[](const int);
 	void Do();
-	void Add();
+	bool Add();
 	void sort(const int& fieldPos);
 	void erase(const int& i);
 	void EditRecording(const int& i);

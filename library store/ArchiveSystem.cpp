@@ -15,17 +15,19 @@ struct Recording :public sf::Drawable
 
 	std::list<std::pair<std::string, int>>* m_people;
 
-	Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count);
+	Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const sf::Font& m_font);
+	int GetY();
+	void Place(const int x, const int y);
+	void Move(const bool up);
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-	//std::string m_nameOfTaker;
-	//int m_timeToReturn;
 private:
-	sf::RectangleShape m_nameSh;
-	sf::RectangleShape m_authorSh;
-	sf::RectangleShape m_genreSh;
-	sf::RectangleShape m_countOfPagesSh;
-	sf::RectangleShape m_countSh;
-	sf::RectangleShape m_countOfTakedSh;
+	sf::Text m_nameTx;
+	sf::Text m_authorTx;
+	sf::Text m_genreTx;
+	sf::Text m_countOfPagesTx;
+	sf::Text m_countTx;
+	sf::Text m_countOfTakedTx;
+	sf::RectangleShape m_underline;
 };
 
 struct ArchiveIMPL
@@ -34,21 +36,96 @@ struct ArchiveIMPL
 	std::list<Recording> m_list;
 };
 
-Recording::Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count) : m_name(name), m_author(author), m_genre(genre), m_countOfPages(countOfPages), m_count(count)
+Recording::Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const sf::Font& font) : m_name(name), m_author(author), m_genre(genre), m_countOfPages(countOfPages), m_count(count)
 {
 	m_countOfTaked = 0;
-	//m_nameOfTaker = "";
-	//m_timeToReturn = 0;
-	//m_people = new std::list<std::pair<std::string, int>>;
 	m_people = nullptr;
 	m_openList = false;
+
+	m_nameTx.setFont(font);
+	m_nameTx.setFillColor(sf::Color::Black);
+	m_nameTx.setCharacterSize(28);
+	m_nameTx.setString(name);
+
+	m_authorTx.setFont(font);
+	m_authorTx.setFillColor(sf::Color::Black);
+	m_authorTx.setCharacterSize(28);
+	m_authorTx.setString(author);
+
+	m_genreTx.setFont(font);
+	m_genreTx.setFillColor(sf::Color::Black);
+	m_genreTx.setCharacterSize(28);
+	m_genreTx.setString(genre);
+
+	m_countOfPagesTx.setFont(font);
+	m_countOfPagesTx.setFillColor(sf::Color::Black);
+	m_countOfPagesTx.setCharacterSize(28);
+	m_countOfPagesTx.setString(std::to_string(countOfPages));
+
+	m_countTx.setFont(font);
+	m_countTx.setFillColor(sf::Color::Black);
+	m_countTx.setCharacterSize(28);
+	m_countTx.setString(std::to_string(count));
+
+	m_countOfTakedTx.setFont(font);
+	m_countOfTakedTx.setFillColor(sf::Color::Black);
+	m_countOfTakedTx.setCharacterSize(28);
+	m_countOfTakedTx.setString("0");
+
+	m_underline.setSize(sf::Vector2f(1180, 3));
+	m_underline.setFillColor(sf::Color::Black);
+}
+
+int Recording::GetY()
+{
+	return m_nameTx.getGlobalBounds().top;
 }
 
 void Recording::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-
+	target.draw(m_nameTx);
+	target.draw(m_authorTx);
+	target.draw(m_genreTx);
+	target.draw(m_countOfPagesTx);
+	target.draw(m_countTx);
+	target.draw(m_countOfTakedTx);
+	target.draw(m_underline);
 }
 
+void Recording::Place(const int x, const int y)
+{
+	m_nameTx.setPosition(x + 5, y);
+	m_authorTx.setPosition(x + 305, y);
+	m_genreTx.setPosition(x + 600, y);
+	m_countOfPagesTx.setPosition(x + 800, y);
+	m_countTx.setPosition(x + 900, y);
+	m_countOfTakedTx.setPosition(x + 1040, y);
+	m_underline.setPosition(x, y + 30);
+}
+
+void Recording::Move(const bool up)
+{
+	if (up)
+	{
+		m_nameTx.move(0, -15);
+		m_authorTx.move(0, -15);
+		m_genreTx.move(0, -15);
+		m_countOfPagesTx.move(0, -15);
+		m_countTx.move(0, -15);
+		m_countOfTakedTx.move(0, -15);
+		m_underline.move(0, -15);
+	}
+	else
+	{
+		m_nameTx.move(0, 15);
+		m_authorTx.move(0, 15);
+		m_genreTx.move(0, 15);
+		m_countOfPagesTx.move(0, 15);
+		m_countTx.move(0, 15);
+		m_countOfTakedTx.move(0, 15);
+		m_underline.move(0, 15);
+	}
+}
 
 ArchiveSystem* ArchiveSystem::m_ArchiveSystem = nullptr;
 
@@ -63,7 +140,7 @@ ArchiveSystem::ArchiveSystem()
 {
 	m_pImpl = new ArchiveIMPL();
 
-	m_window.create(sf::VideoMode(1280, 720), "Library");
+	m_window.create(sf::VideoMode(1280, 720), "Library", sf::Style::Titlebar);
 
 	m_pImpl->m_font.loadFromFile("resourses/arial.ttf");
 
@@ -73,27 +150,35 @@ ArchiveSystem::ArchiveSystem()
 
 }
 
-auto& ArchiveSystem::operator[](const int i)
+void ArchiveSystem::PlaceElements()
 {
-	auto l_iter = m_pImpl->m_list.begin();
-	std::advance(l_iter, i);
-
-	return *l_iter;
+	int n = 0;
+	for (auto& i : m_pImpl->m_list)
+	{
+		i.Place(50, 100 + n * 30);
+		n++;		
+	}
 }
 
-void ArchiveSystem::sort(const int& fieldPos)
+void ArchiveSystem::Move(const bool up)
 {
-	/*m_list.sort([](const Recording& a,const Recording& b)
-	{ 
-
-	});*/
+	if (up)
+		if (m_pImpl->m_list.begin()->GetY() <= 120)
+			return;
+	if (!up)
+		if ((--m_pImpl->m_list.end())->GetY() >= 650)
+			return;
+	for (auto& i : m_pImpl->m_list)
+	{
+		i.Move(up);
+	}
 }
 
-void ArchiveSystem::Add()
+bool ArchiveSystem::Add()
 {
 	std::string name_str, author_str, genre_str, countPag_str, count_str;
 	bool name_enter = false, author_enter = false, genre_enter = false, countPag_enter = false, count_enter = false;
-	
+
 	sf::RectangleShape menu;
 	menu.setSize(sf::Vector2f(500, 300));
 	menu.setOrigin(250, 150);
@@ -205,8 +290,8 @@ void ArchiveSystem::Add()
 				}
 				else if (sf::IntRect(addForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 				{
-					m_pImpl->m_list.push_back(Recording(name_str, author_str, genre_str, std::stoi(countPag_str), std::stoi(count_str)));
-					return;
+					m_pImpl->m_list.push_back(Recording(name_str, author_str, genre_str, std::stoi(countPag_str), std::stoi(count_str), m_pImpl->m_font));
+					return true;
 				}
 				else
 				{
@@ -217,7 +302,7 @@ void ArchiveSystem::Add()
 					count_enter = false;
 				}
 				if (!sf::IntRect(menu.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-					return;
+					return false;
 			}
 			if (event.type == sf::Event::TextEntered && (name_enter || author_enter || genre_enter || countPag_enter || count_enter))
 			{
@@ -240,7 +325,16 @@ void ArchiveSystem::Add()
 						if (str->size() > 0)
 						{
 							str->pop_back();
-							//name.setString(*str);
+							if (name_enter)
+								name.setString("Name:   " + *str);
+							else if (author_enter)
+								author.setString("Author: " + *str);
+							else if (genre_enter)
+								genre.setString("Genre:  " + *str);
+							else if (countPag_enter)
+								countOfPages.setString("Count of pages: " + *str);
+							else if (count_enter)
+								count.setString("Count: " + *str);
 						}
 					}
 					else if (event.text.unicode < 128)
@@ -285,6 +379,14 @@ void ArchiveSystem::Add()
 	}
 }
 
+void ArchiveSystem::sort(const int& fieldPos)
+{
+	/*m_list.sort([](const Recording& a,const Recording& b)
+	{ 
+
+	});*/
+}
+
 void ArchiveSystem::erase(const int& i)
 {
 	auto l_iter = m_pImpl->m_list.begin();
@@ -311,6 +413,9 @@ void ArchiveSystem::Do()
 	sf::Texture t_plus;
 	t_plus.loadFromFile("resourses/+.png");
 	sf::Sprite s_plus(t_plus);
+	sf::Sprite s_closed(t_plus);
+	s_closed.rotate(45);
+	s_closed.setPosition(1260, -15);
 
 	sf::Text names("Name", m_pImpl->m_font);
 	names.setFillColor(sf::Color::Black);
@@ -324,18 +429,18 @@ void ArchiveSystem::Do()
 	sf::Text pages("Pages", m_pImpl->m_font);
 	pages.setFillColor(sf::Color::Black);
 	pages.setPosition(855, 55);
+	sf::Text count("Count", m_pImpl->m_font);
+	count.setFillColor(sf::Color::Black);
+	count.setPosition(980, 55);
 	sf::Text taken("Taken", m_pImpl->m_font);
 	taken.setFillColor(sf::Color::Black);
-	taken.setPosition(1000, 55);
+	taken.setPosition(1120, 55);
 
 	sf::RectangleShape bottom;
 	bottom.setSize(sf::Vector2f(1280, 40));
 	bottom.setOrigin(640, 20);
 	bottom.setPosition(640, 700);
-	bottom.setFillColor(sf::Color(230,230,230));
 	bottom.setOutlineThickness(3);
-	bottom.setOutlineColor(sf::Color(220,220,220));
-
 	sf::RectangleShape menu;
 	menu.setSize(sf::Vector2f(1180, 700));
 	menu.setOrigin(590, 250);
@@ -363,50 +468,96 @@ void ArchiveSystem::Do()
 	pages_shape.setPosition(850, 50);
 	pages_shape.setOutlineThickness(3);
 	pages_shape.setOutlineColor(sf::Color::Black);
+	sf::RectangleShape count_shape;
+	count_shape.setSize(sf::Vector2f(140, 50));
+	count_shape.setPosition(950, 50);
+	count_shape.setOutlineThickness(3);
+	count_shape.setOutlineColor(sf::Color::Black);
 	sf::RectangleShape taken_shape;
-	taken_shape.setSize(sf::Vector2f(180, 50));
-	taken_shape.setPosition(950, 50);
+	taken_shape.setSize(sf::Vector2f(140, 50));
+	taken_shape.setPosition(1090, 50);
 	taken_shape.setOutlineThickness(3);
 	taken_shape.setOutlineColor(sf::Color::Black);
-	sf::RectangleShape action;
-	action.setSize(sf::Vector2f(100, 50));
-	action.setPosition(1130, 50);
-	action.setOutlineThickness(3);
-	action.setOutlineColor(sf::Color::Black);
+
+	sf::RectangleShape wall;
+	wall.setSize(sf::Vector2f(3, 700));
+	wall.setFillColor(sf::Color::Black);
 
 	sf::Event event;
 	while (m_window.isOpen())
 	{
 		while (m_window.pollEvent(event))
 		{
-			if (event.type == sf::Event::Closed)
-				m_window.close();
 			if (event.type == sf::Event::MouseButtonReleased && event.key.code == sf::Mouse::Left)
 			{
 				if (sf::IntRect(s_plus.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 				{
 					Add();
+					PlaceElements();
+				}
+				if (sf::IntRect(s_closed.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					m_window.close();
+					return;
+				}
+			}
+			if (event.type == sf::Event::MouseWheelMoved)
+			{
+				if (!m_pImpl->m_list.empty())
+				{
+					if (event.mouseWheel.delta == 1)   //up
+						Move(true);
+					else if (event.mouseWheel.delta == -1)   //down
+						Move(false);
 				}
 			}
 		}
 
 		m_window.clear(sf::Color::White);
 
-		m_window.draw(s_plus);
 		m_window.draw(menu);
-		m_window.draw(bottom);
+
+		for (auto i : m_pImpl->m_list)
+		{
+			m_window.draw(i);
+		}
+
 		m_window.draw(names_shape);
 		m_window.draw(authors_shape);
 		m_window.draw(genres_shape);
 		m_window.draw(pages_shape);
+		m_window.draw(count_shape);
 		m_window.draw(taken_shape);
-		m_window.draw(action);
 
 		m_window.draw(names);
 		m_window.draw(authors);
 		m_window.draw(genres);
 		m_window.draw(pages);
+		m_window.draw(count);
 		m_window.draw(taken);
+
+		wall.setPosition(347, 50);
+		m_window.draw(wall);
+		wall.setPosition(647, 50);
+		m_window.draw(wall);
+		wall.setPosition(847, 50);
+		m_window.draw(wall);
+		wall.setPosition(947, 50);
+		m_window.draw(wall);
+		wall.setPosition(1087, 50);
+		m_window.draw(wall);
+
+		bottom.setPosition(640, 700);
+		bottom.setFillColor(sf::Color(230, 230, 230));
+		bottom.setOutlineColor(sf::Color(220, 220, 220));
+		m_window.draw(bottom);
+		bottom.setPosition(640, 22);
+		bottom.setFillColor(sf::Color::White);
+		bottom.setOutlineColor(sf::Color::White);
+		m_window.draw(bottom);
+
+		m_window.draw(s_plus);
+		m_window.draw(s_closed);
 
 		m_window.display();
 	}
