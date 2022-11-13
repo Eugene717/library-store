@@ -146,9 +146,11 @@
   <ItemGroup>
     <ClCompile Include="ArchiveSystem.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Recording.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArchiveSystem.h" />
+    <ClInclude Include="Recording.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

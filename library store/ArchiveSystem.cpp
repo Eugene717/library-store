@@ -1,131 +1,14 @@
 #include "ArchiveSystem.h"
 #include <iterator>
 #include <fstream>
-
-struct Recording :public sf::Drawable
-{
-	std::string m_name;
-	std::string m_author;
-	std::string m_genre;
-	int m_countOfPages;
-	int m_count;
-	int m_countOfTaked;
-
-	bool m_openList;   //not shown
-
-	std::list<std::pair<std::string, int>>* m_people;
-
-	Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const sf::Font& m_font);
-	int GetY();
-	void Place(const int x, const int y);
-	void Move(const bool up);
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-private:
-	sf::Text m_nameTx;
-	sf::Text m_authorTx;
-	sf::Text m_genreTx;
-	sf::Text m_countOfPagesTx;
-	sf::Text m_countTx;
-	sf::Text m_countOfTakedTx;
-	sf::RectangleShape m_underline;
-};
+#include "Recording.h"
 
 struct ArchiveIMPL
 {
 	sf::Font m_font;
 	std::list<Recording> m_list;
+	int m_sorted;
 };
-
-Recording::Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const sf::Font& font) : m_name(name), m_author(author), m_genre(genre), m_countOfPages(countOfPages), m_count(count)
-{
-	m_countOfTaked = 0;
-	m_people = nullptr;
-	m_openList = false;
-
-	m_nameTx.setFont(font);
-	m_nameTx.setFillColor(sf::Color::Black);
-	m_nameTx.setCharacterSize(28);
-	m_nameTx.setString(name);
-
-	m_authorTx.setFont(font);
-	m_authorTx.setFillColor(sf::Color::Black);
-	m_authorTx.setCharacterSize(28);
-	m_authorTx.setString(author);
-
-	m_genreTx.setFont(font);
-	m_genreTx.setFillColor(sf::Color::Black);
-	m_genreTx.setCharacterSize(28);
-	m_genreTx.setString(genre);
-
-	m_countOfPagesTx.setFont(font);
-	m_countOfPagesTx.setFillColor(sf::Color::Black);
-	m_countOfPagesTx.setCharacterSize(28);
-	m_countOfPagesTx.setString(std::to_string(countOfPages));
-
-	m_countTx.setFont(font);
-	m_countTx.setFillColor(sf::Color::Black);
-	m_countTx.setCharacterSize(28);
-	m_countTx.setString(std::to_string(count));
-
-	m_countOfTakedTx.setFont(font);
-	m_countOfTakedTx.setFillColor(sf::Color::Black);
-	m_countOfTakedTx.setCharacterSize(28);
-	m_countOfTakedTx.setString("0");
-
-	m_underline.setSize(sf::Vector2f(1180, 3));
-	m_underline.setFillColor(sf::Color::Black);
-}
-
-int Recording::GetY()
-{
-	return m_nameTx.getGlobalBounds().top;
-}
-
-void Recording::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-	target.draw(m_nameTx);
-	target.draw(m_authorTx);
-	target.draw(m_genreTx);
-	target.draw(m_countOfPagesTx);
-	target.draw(m_countTx);
-	target.draw(m_countOfTakedTx);
-	target.draw(m_underline);
-}
-
-void Recording::Place(const int x, const int y)
-{
-	m_nameTx.setPosition(x + 5, y);
-	m_authorTx.setPosition(x + 305, y);
-	m_genreTx.setPosition(x + 600, y);
-	m_countOfPagesTx.setPosition(x + 800, y);
-	m_countTx.setPosition(x + 900, y);
-	m_countOfTakedTx.setPosition(x + 1040, y);
-	m_underline.setPosition(x, y + 30);
-}
-
-void Recording::Move(const bool up)
-{
-	if (up)
-	{
-		m_nameTx.move(0, -15);
-		m_authorTx.move(0, -15);
-		m_genreTx.move(0, -15);
-		m_countOfPagesTx.move(0, -15);
-		m_countTx.move(0, -15);
-		m_countOfTakedTx.move(0, -15);
-		m_underline.move(0, -15);
-	}
-	else
-	{
-		m_nameTx.move(0, 15);
-		m_authorTx.move(0, 15);
-		m_genreTx.move(0, 15);
-		m_countOfPagesTx.move(0, 15);
-		m_countTx.move(0, 15);
-		m_countOfTakedTx.move(0, 15);
-		m_underline.move(0, 15);
-	}
-}
 
 ArchiveSystem* ArchiveSystem::m_ArchiveSystem = nullptr;
 
@@ -144,6 +27,8 @@ ArchiveSystem::ArchiveSystem()
 
 	m_pImpl->m_font.loadFromFile("resourses/arial.ttf");
 
+	m_pImpl->m_sorted = -1;
+
 	std::fstream fin("resourses/recordings.dat", std::ios::in | std::ios::out | std::ios::app);
 	if (fin.is_open());
 
@@ -155,7 +40,7 @@ void ArchiveSystem::PlaceElements()
 	int n = 0;
 	for (auto& i : m_pImpl->m_list)
 	{
-		i.Place(50, 100 + n * 30);
+		i.Place(50, 100 + n * 35);
 		n++;		
 	}
 }
@@ -166,7 +51,7 @@ void ArchiveSystem::Move(const bool up)
 		if (m_pImpl->m_list.begin()->GetY() <= 120)
 			return;
 	if (!up)
-		if ((--m_pImpl->m_list.end())->GetY() >= 650)
+		if ((--m_pImpl->m_list.end())->GetY() >= 645)
 			return;
 	for (auto& i : m_pImpl->m_list)
 	{
@@ -381,10 +266,74 @@ bool ArchiveSystem::Add()
 
 void ArchiveSystem::sort(const int& fieldPos)
 {
-	/*m_list.sort([](const Recording& a,const Recording& b)
-	{ 
-
-	});*/
+	if (m_pImpl->m_sorted == -1)
+		m_pImpl->m_list.sort([&](const Recording& a, const Recording& b)
+			{
+				if (fieldPos == 1)
+				{
+					m_pImpl->m_sorted = 1;
+					return a.m_name < b.m_name;
+				}
+				if (fieldPos == 2)
+				{
+					m_pImpl->m_sorted = 2;
+					return a.m_author < b.m_author;
+				}
+				if (fieldPos == 3)
+				{
+					m_pImpl->m_sorted = 3;
+					return a.m_genre < b.m_genre;
+				}
+				if (fieldPos == 4)
+				{
+					m_pImpl->m_sorted = 4;
+					return a.m_countOfPages < b.m_countOfPages;
+				}
+				if (fieldPos == 5)
+				{
+					m_pImpl->m_sorted = 5;
+					return a.m_count < b.m_count;
+				}
+				if (fieldPos == 6)
+				{
+					m_pImpl->m_sorted = 6;
+					return a.m_countOfTaked < b.m_countOfTaked;
+				}
+			});
+	else
+		m_pImpl->m_list.sort([&](const Recording& a, const Recording& b)
+			{
+				if (fieldPos == 1)
+				{
+					m_pImpl->m_sorted = -1;
+					return a.m_name > b.m_name;
+				}
+				if (fieldPos == 2)
+				{
+					m_pImpl->m_sorted = -1;
+					return a.m_author > b.m_author;
+				}
+				if (fieldPos == 3)
+				{
+					m_pImpl->m_sorted = -1;
+					return a.m_genre > b.m_genre;
+				}
+				if (fieldPos == 4)
+				{
+					m_pImpl->m_sorted = -1;
+					return a.m_countOfPages > b.m_countOfPages;
+				}
+				if (fieldPos == 5)
+				{
+					m_pImpl->m_sorted = -1;
+					return a.m_count > b.m_count;
+				}
+				if (fieldPos == 6)
+				{
+					m_pImpl->m_sorted = -1;
+					return a.m_countOfTaked > b.m_countOfTaked;
+				}
+			});
 }
 
 void ArchiveSystem::erase(const int& i)
@@ -392,7 +341,7 @@ void ArchiveSystem::erase(const int& i)
 	auto l_iter = m_pImpl->m_list.begin();
 	std::advance(l_iter, i);
 
-
+	m_pImpl->m_list.erase(l_iter);
 }
 
 void ArchiveSystem::EditRecording(const int& i)
@@ -416,6 +365,16 @@ void ArchiveSystem::Do()
 	sf::Sprite s_closed(t_plus);
 	s_closed.rotate(45);
 	s_closed.setPosition(1260, -15);
+	sf::Texture t_minus;
+	t_minus.loadFromFile("resourses/-.png");
+	sf::Texture t_edit;
+	t_edit.loadFromFile("resourses/edit.png");
+
+
+	sf::Sprite s_close(t_plus);
+	s_close.rotate(45);
+	sf::Sprite s_minus(t_minus);
+	sf::Sprite s_edit(t_edit);
 
 	sf::Text names("Name", m_pImpl->m_font);
 	names.setFillColor(sf::Color::Black);
@@ -483,6 +442,8 @@ void ArchiveSystem::Do()
 	wall.setSize(sf::Vector2f(3, 700));
 	wall.setFillColor(sf::Color::Black);
 
+
+
 	sf::Event event;
 	while (m_window.isOpen())
 	{
@@ -496,9 +457,36 @@ void ArchiveSystem::Do()
 					PlaceElements();
 				}
 				if (sf::IntRect(s_closed.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+					m_window.close();					
+				if (sf::IntRect(names_shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 				{
-					m_window.close();
-					return;
+					sort(1);
+					PlaceElements();
+				}
+				if (sf::IntRect(authors_shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					sort(2);
+					PlaceElements();
+				}
+				if (sf::IntRect(genres_shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					sort(3);
+					PlaceElements();
+				}
+				if (sf::IntRect(pages_shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					sort(4);
+					PlaceElements();
+				}
+				if (sf::IntRect(count_shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					sort(5);
+					PlaceElements();
+				}
+				if (sf::IntRect(taken_shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					sort(6);
+					PlaceElements();
 				}
 			}
 			if (event.type == sf::Event::MouseWheelMoved)

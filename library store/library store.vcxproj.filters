@@ -21,9 +21,15 @@
     <ClCompile Include="ArchiveSystem.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Recording.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArchiveSystem.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
