@@ -19,8 +19,8 @@ public:
 
 	auto& operator[](const int);
 	void Do();
+	void Add();
 	void sort(const int& fieldPos);
-	void push();
 	void erase(const int& i);
 	void EditRecording(const int& i);
 	void TakeBook();

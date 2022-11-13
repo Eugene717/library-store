@@ -39,8 +39,9 @@ Recording::Recording(const std::string& name, const std::string& author, const s
 	m_countOfTaked = 0;
 	//m_nameOfTaker = "";
 	//m_timeToReturn = 0;
-	m_people = new std::list<std::pair<std::string, int>>;
+	//m_people = new std::list<std::pair<std::string, int>>;
 	m_people = nullptr;
+	m_openList = false;
 }
 
 void Recording::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -88,9 +89,200 @@ void ArchiveSystem::sort(const int& fieldPos)
 	});*/
 }
 
-void ArchiveSystem::push()
+void ArchiveSystem::Add()
 {
+	std::string name_str, author_str, genre_str, countPag_str, count_str;
+	bool name_enter = false, author_enter = false, genre_enter = false, countPag_enter = false, count_enter = false;
+	
+	sf::RectangleShape menu;
+	menu.setSize(sf::Vector2f(500, 300));
+	menu.setOrigin(250, 150);
+	menu.setPosition(640, 350);
+	menu.setOutlineThickness(4);
+	menu.setOutlineColor(sf::Color::Black);
 
+	sf::Text addBook("Add book", m_pImpl->m_font, 30);
+	addBook.setFillColor(sf::Color::Black);
+	addBook.setPosition(580, 200);
+	sf::Text name("Name:", m_pImpl->m_font, 24);
+	name.setFillColor(sf::Color::Black);
+	name.setPosition(400, 240);
+	sf::Text author("Author:", m_pImpl->m_font, 24);
+	author.setFillColor(sf::Color::Black);
+	author.setPosition(400, 280);
+	sf::Text genre("Genre:", m_pImpl->m_font, 24);
+	genre.setFillColor(sf::Color::Black);
+	genre.setPosition(400, 320);
+	sf::Text countOfPages("Count of pages:", m_pImpl->m_font, 24);
+	countOfPages.setFillColor(sf::Color::Black);
+	countOfPages.setPosition(400, 360);
+	sf::Text count("Count:", m_pImpl->m_font, 24);
+	count.setFillColor(sf::Color::Black);
+	count.setPosition(400, 400);
+	sf::Text add("Add", m_pImpl->m_font, 30);
+	add.setFillColor(sf::Color::Black);
+	add.setPosition(615, 450);
+
+	sf::RectangleShape nameForm;
+	nameForm.setSize(sf::Vector2f(390, 30));
+	nameForm.setPosition(487, 243);
+	nameForm.setOutlineThickness(2);
+	nameForm.setOutlineColor(sf::Color::Black);
+	sf::RectangleShape authorForm;
+	authorForm.setSize(sf::Vector2f(390, 30));
+	authorForm.setPosition(487, 283);
+	authorForm.setOutlineThickness(2);
+	authorForm.setOutlineColor(sf::Color::Black);
+	sf::RectangleShape genreForm;
+	genreForm.setSize(sf::Vector2f(390, 30));
+	genreForm.setPosition(487, 323);
+	genreForm.setOutlineThickness(2);
+	genreForm.setOutlineColor(sf::Color::Black);
+	sf::RectangleShape countPagForm;
+	countPagForm.setSize(sf::Vector2f(293, 30));
+	countPagForm.setPosition(584, 363);
+	countPagForm.setOutlineThickness(2);
+	countPagForm.setOutlineColor(sf::Color::Black);
+	sf::RectangleShape countForm;
+	countForm.setSize(sf::Vector2f(150, 30));
+	countForm.setPosition(477, 403);
+	countForm.setOutlineThickness(2);
+	countForm.setOutlineColor(sf::Color::Black);
+	sf::RectangleShape addForm;
+	addForm.setSize(sf::Vector2f(75, 32));
+	addForm.setPosition(605, 453);
+	addForm.setOutlineThickness(2);
+	addForm.setOutlineColor(sf::Color::Black);
+
+	sf::Event event;
+	while (m_window.isOpen())
+	{
+		while (m_window.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+				m_window.close();
+			if (event.type == sf::Event::MouseButtonReleased && event.key.code == sf::Mouse::Left)
+			{
+				if (sf::IntRect(nameForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					name_enter = true;
+					author_enter = false;
+					genre_enter = false;
+					countPag_enter = false;
+					count_enter = false;
+				}
+				else if (sf::IntRect(authorForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					name_enter = false;
+					author_enter = true;
+					genre_enter = false;
+					countPag_enter = false;
+					count_enter = false;
+				}
+				else if (sf::IntRect(genreForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					name_enter = false;
+					author_enter = false;
+					genre_enter = true;
+					countPag_enter = false;
+					count_enter = false;
+				}
+				else if (sf::IntRect(countPagForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					name_enter = false;
+					author_enter = false;
+					genre_enter = false;
+					countPag_enter = true;
+					count_enter = false;
+				}
+				else if (sf::IntRect(countForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					name_enter = false;
+					author_enter = false;
+					genre_enter = false;
+					countPag_enter = false;
+					count_enter = true;
+				}
+				else if (sf::IntRect(addForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					m_pImpl->m_list.push_back(Recording(name_str, author_str, genre_str, std::stoi(countPag_str), std::stoi(count_str)));
+					return;
+				}
+				else
+				{
+					name_enter = false;
+					author_enter = false;
+					genre_enter = false;
+					countPag_enter = false;
+					count_enter = false;
+				}
+				if (!sf::IntRect(menu.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+					return;
+			}
+			if (event.type == sf::Event::TextEntered && (name_enter || author_enter || genre_enter || countPag_enter || count_enter))
+			{
+				std::string* str = nullptr;
+				if (name_enter)
+					str = &name_str;
+				else if (author_enter)
+					str = &author_str;
+				else if (genre_enter)
+					str = &genre_str;
+				else if (countPag_enter)
+					str = &countPag_str;
+				else if (count_enter)
+					str = &count_str;
+
+				if (str != nullptr)
+				{
+					if (event.text.unicode == '\b')
+					{
+						if (str->size() > 0)
+						{
+							str->pop_back();
+							//name.setString(*str);
+						}
+					}
+					else if (event.text.unicode < 128)
+					{
+						if (str->size() < 30)
+						{
+							*str += static_cast<char>(event.text.unicode);
+							if (name_enter)
+								name.setString("Name:   " + *str);
+							else if (author_enter)
+								author.setString("Author: " + *str);
+							else if (genre_enter)
+								genre.setString("Genre:  " + *str);
+							else if (countPag_enter)
+								countOfPages.setString("Count of pages: " + *str);
+							else if (count_enter)
+								count.setString("Count: " + *str);
+						}
+					}
+				}
+			}
+		}
+
+		m_window.draw(menu);
+
+		m_window.draw(nameForm);
+		m_window.draw(authorForm);
+		m_window.draw(genreForm);
+		m_window.draw(countPagForm);
+		m_window.draw(countForm);
+		m_window.draw(addForm);
+
+		m_window.draw(name);
+		m_window.draw(author);
+		m_window.draw(genre);
+		m_window.draw(countOfPages);
+		m_window.draw(count);
+		m_window.draw(add);
+		m_window.draw(addBook);
+
+		m_window.display();
+	}
 }
 
 void ArchiveSystem::erase(const int& i)
@@ -116,6 +308,10 @@ void ArchiveSystem::TakeBook()
 
 void ArchiveSystem::Do()
 {
+	sf::Texture t_plus;
+	t_plus.loadFromFile("resourses/+.png");
+	sf::Sprite s_plus(t_plus);
+
 	sf::Text names("Name", m_pImpl->m_font);
 	names.setFillColor(sf::Color::Black);
 	names.setPosition(150, 55);
@@ -185,10 +381,18 @@ void ArchiveSystem::Do()
 		{
 			if (event.type == sf::Event::Closed)
 				m_window.close();
+			if (event.type == sf::Event::MouseButtonReleased && event.key.code == sf::Mouse::Left)
+			{
+				if (sf::IntRect(s_plus.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					Add();
+				}
+			}
 		}
 
 		m_window.clear(sf::Color::White);
 
+		m_window.draw(s_plus);
 		m_window.draw(menu);
 		m_window.draw(bottom);
 		m_window.draw(names_shape);
