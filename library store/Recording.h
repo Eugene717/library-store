@@ -17,7 +17,10 @@ struct Recording :public sf::Drawable
 
 	Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const sf::Font& m_font, const int& countOfTaked);
 	int GetY();
+	sf::FloatRect getGlobalBounds() const;
 	void Place(const int x, const int y);
+	void Edit(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const int& countOfTaked);
+	void TakeReturnBook(bool take);
 	void Move(const bool up);
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 private:

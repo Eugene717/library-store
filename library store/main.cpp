@@ -2,6 +2,7 @@
 
 int main()
 {
+	setlocale(LC_ALL, "Russian");
 	sf::Event event;
 
 	ArchiveSystem* archive = ArchiveSystem::GetInstance();

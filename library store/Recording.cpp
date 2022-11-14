@@ -45,6 +45,11 @@ int Recording::GetY()
 	return m_nameTx.getGlobalBounds().top;
 }
 
+sf::FloatRect Recording::getGlobalBounds() const
+{
+	return sf::FloatRect(m_nameTx.getGlobalBounds().left - 6, m_nameTx.getGlobalBounds().top - 10, 1220, 33);
+}
+
 void Recording::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(m_nameTx);
@@ -65,6 +70,34 @@ void Recording::Place(const int x, const int y)
 	m_countTx.setPosition(x + 900, y);
 	m_countOfTakedTx.setPosition(x + 1040, y);
 	m_underline.setPosition(x, y + 35);
+}
+
+void Recording::Edit(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const int& countOfTaked)
+{
+	m_name = name; m_author = author; m_genre = genre; m_countOfPages = countOfPages; m_count = count; m_countOfTaked = countOfTaked;
+	
+	m_nameTx.setString(name);
+	m_authorTx.setString(author);
+	m_genreTx.setString(genre);
+	m_countOfPagesTx.setString(std::to_string(countOfPages));
+	m_countTx.setString(std::to_string(count));
+	m_countOfTakedTx.setString(std::to_string(countOfTaked));
+}
+
+void Recording::TakeReturnBook(bool take)
+{
+	if (take)
+	{
+		if (m_countOfTaked < m_count)
+			++m_countOfTaked;
+	}
+	else
+	{
+		if (m_countOfTaked > 0)
+			--m_countOfTaked;
+	}
+
+	m_countOfTakedTx.setString(std::to_string(m_countOfTaked));
 }
 
 void Recording::Move(const bool up)

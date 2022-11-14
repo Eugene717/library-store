@@ -22,9 +22,8 @@ public:
 
 	void Do();
 	bool Add();
+	void Edit(const int& i);
 	void sort(const int& fieldPos);
-	void erase(const int& i);
-	void EditRecording(const int& i);
-	void TakeBook();
+	void TakeReturnBook(const bool take, const int i);
 };
 
