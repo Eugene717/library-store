@@ -1,8 +1,8 @@
 #include "Recording.h"
 
-Recording::Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const sf::Font& font) : m_name(name), m_author(author), m_genre(genre), m_countOfPages(countOfPages), m_count(count)
+Recording::Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const sf::Font& font, const int& countOfTaked) : m_name(name), m_author(author), m_genre(genre), m_countOfPages(countOfPages), m_count(count)
 {
-	m_countOfTaked = 0;
+	m_countOfTaked = countOfTaked;
 	//m_people = nullptr;
 	m_openList = false;
 
@@ -34,7 +34,7 @@ Recording::Recording(const std::string& name, const std::string& author, const s
 	m_countOfTakedTx.setFont(font);
 	m_countOfTakedTx.setFillColor(sf::Color::Black);
 	m_countOfTakedTx.setCharacterSize(28);
-	m_countOfTakedTx.setString("0");
+	m_countOfTakedTx.setString(std::to_string(countOfTaked));
 
 	m_underline.setSize(sf::Vector2f(1180, 3));
 	m_underline.setFillColor(sf::Color::Black);
@@ -71,16 +71,6 @@ void Recording::Move(const bool up)
 {
 	if (up)
 	{
-		m_nameTx.move(0, -20);
-		m_authorTx.move(0, -20);
-		m_genreTx.move(0, -20);
-		m_countOfPagesTx.move(0, -20);
-		m_countTx.move(0, -20);
-		m_countOfTakedTx.move(0, -20);
-		m_underline.move(0, -20);
-	}
-	else
-	{
 		m_nameTx.move(0, 20);
 		m_authorTx.move(0, 20);
 		m_genreTx.move(0, 20);
@@ -88,5 +78,15 @@ void Recording::Move(const bool up)
 		m_countTx.move(0, 20);
 		m_countOfTakedTx.move(0, 20);
 		m_underline.move(0, 20);
+	}
+	else
+	{
+		m_nameTx.move(0, -20);
+		m_authorTx.move(0, -20);
+		m_genreTx.move(0, -20);
+		m_countOfPagesTx.move(0, -20);
+		m_countTx.move(0, -20);
+		m_countOfTakedTx.move(0, -20);
+		m_underline.move(0, -20);
 	}
 }

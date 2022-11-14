@@ -30,9 +30,18 @@ ArchiveSystem::ArchiveSystem()
 	m_pImpl->m_sorted = -1;
 
 	std::fstream fin("resourses/recordings.dat", std::ios::in | std::ios::out | std::ios::app);
-	if (fin.is_open());
 
+	std::string name, author, genre;
+	int countPag, count, countTaked;
 
+	while (!fin.eof())
+	{
+		name = author = genre = ""; countPag, count, countTaked = 0;
+		fin >> name >> author >> genre >> countPag >> count >> countTaked;
+		if (name != "")
+			m_pImpl->m_list.push_back(Recording(name, author, genre, countPag, count, m_pImpl->m_font, countTaked));
+	}
+	PlaceElements();
 }
 
 void ArchiveSystem::PlaceElements()
@@ -48,11 +57,12 @@ void ArchiveSystem::PlaceElements()
 void ArchiveSystem::Move(const bool up)
 {
 	if (up)
-		if (m_pImpl->m_list.begin()->GetY() <= 120)
+		if (m_pImpl->m_list.begin()->GetY() >= 100)
 			return;
 	if (!up)
-		if ((--m_pImpl->m_list.end())->GetY() >= 645)
+		if (m_pImpl->m_list.begin()->GetY() <= 110 || (--m_pImpl->m_list.end())->GetY() <= 600)
 			return;
+
 	for (auto& i : m_pImpl->m_list)
 	{
 		i.Move(up);
@@ -175,7 +185,7 @@ bool ArchiveSystem::Add()
 				}
 				else if (sf::IntRect(addForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 				{
-					m_pImpl->m_list.push_back(Recording(name_str, author_str, genre_str, std::stoi(countPag_str), std::stoi(count_str), m_pImpl->m_font));
+					m_pImpl->m_list.push_back(Recording(name_str, author_str, genre_str, std::stoi(countPag_str), std::stoi(count_str), m_pImpl->m_font, 0));
 					return true;
 				}
 				else
@@ -371,6 +381,7 @@ void ArchiveSystem::Do()
 	t_edit.loadFromFile("resourses/edit.png");
 
 
+
 	sf::Sprite s_close(t_plus);
 	s_close.rotate(45);
 	sf::Sprite s_minus(t_minus);
@@ -457,7 +468,15 @@ void ArchiveSystem::Do()
 					PlaceElements();
 				}
 				if (sf::IntRect(s_closed.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-					m_window.close();					
+				{
+					std::ofstream fout("resourses/recordings.dat", std::ios::out);
+					for (auto i : m_pImpl->m_list)
+					{
+						if (fout.is_open())
+							fout << i.m_name << " " << i.m_author << " " << i.m_genre << " " << i.m_countOfPages << " " << i.m_count << " " << i.m_countOfTaked << '\n';
+					}
+					m_window.close();
+				}
 				if (sf::IntRect(names_shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 				{
 					sort(1);

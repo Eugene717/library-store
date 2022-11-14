@@ -15,7 +15,7 @@ struct Recording :public sf::Drawable
 
 	//std::list<std::pair<std::string, int>>* m_people;
 
-	Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const sf::Font& m_font);
+	Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const sf::Font& m_font, const int& countOfTaked);
 	int GetY();
 	void Place(const int x, const int y);
 	void Move(const bool up);
