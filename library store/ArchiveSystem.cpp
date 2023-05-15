@@ -1,7 +1,7 @@
 #include "Recording.h"
 #include "ArchiveSystem.h"
 #include <iterator>
-#include <fstream>
+#include <mysql_connection.h>
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>
 #include <cppconn/prepared_statement.h>
@@ -24,10 +24,11 @@ struct ArchiveIMPL
 	std::string* m_writeString;
 	sf::Text* m_writeText;
 
-	/*sql::Driver* m_driver;
+	sql::Driver* m_driver;
 	sql::Connection* m_con;
 	sql::Statement* m_stat;
-	sql::PreparedStatement* m_prestat;*/
+	sql::PreparedStatement* m_prestat;
+	sql::ResultSet* m_res;
 };
 
 ArchiveSystem* ArchiveSystem::GetInstance()
@@ -42,18 +43,6 @@ ArchiveSystem::ArchiveSystem()
 
 	m_window.create(sf::VideoMode(1280, 720), "Library");
 
-	/*try
-	{
-		m_pImpl->m_driver = get_driver_instance();
-		m_pImpl->m_con = m_pImpl->m_driver->connect("localhost", "root", "12222550g");
-	}
-	catch (sql::SQLException e)
-	{
-		std::cerr << "Could connect to server. Error massage: " << e.what() << std::endl;
-		system("pause");
-		exit(1);
-	}*/
-
 	m_pImpl->m_font.loadFromFile("resourses/times.ttf");
 
 	m_pImpl->m_sorted = -1;
@@ -63,18 +52,32 @@ ArchiveSystem::ArchiveSystem()
 	m_pImpl->m_writeString = nullptr;
 	m_pImpl->m_writeText = nullptr;
 
-	std::fstream fin("resourses/recordings.dat", std::ios::in | std::ios::out | std::ios::app);
-
 	std::string name, author, genre;
 	int countPag, price, count;
 
-	while (!fin.eof())
+	try
 	{
-		name = author = genre = ""; countPag, price, count;
-		fin >> name >> author >> genre >> countPag >> price >> count;
-		if (name != "")
-			m_pImpl->m_recordings.push_back(Recording(name, author, genre, countPag, price, count, m_pImpl->m_font));
+		m_pImpl->m_driver = get_driver_instance();
+		m_pImpl->m_con = m_pImpl->m_driver->connect("localhost", "root", "12222550g");
 	}
+	catch (sql::SQLException e)
+	{
+		std::cerr << "Could connect to server. Error massage: " << e.what() << std::endl;
+		system("pause");
+		exit(1);
+	}
+
+	m_pImpl->m_con->setSchema("bookstore");
+	m_pImpl->m_stat = m_pImpl->m_con->createStatement();
+	m_pImpl->m_res = m_pImpl->m_stat->executeQuery("SELECT * FROM books");
+
+	while (m_pImpl->m_res->next())
+		m_pImpl->m_recordings.push_back(Recording(m_pImpl->m_res, m_pImpl->m_font));
+
+	delete m_pImpl->m_con;
+	delete m_pImpl->m_stat;
+	delete m_pImpl->m_res;
+
 	SetBasicElements();
 	PlaceElements();
 }
@@ -280,17 +283,32 @@ void ArchiveSystem::PlaceElements()
 	{
 		if (m_pImpl->m_search != "")
 		{
-			if (i.m_name.find(m_pImpl->m_search) != std::string::npos)
+			std::transform(m_pImpl->m_search.begin(), m_pImpl->m_search.end(), m_pImpl->m_search.begin(), ::toupper);
+
+			std::vector<std::string> strings;
+			strings.push_back(i.m_name);
+			strings.push_back(i.m_author);
+			strings.push_back(i.m_genre);
+			strings.push_back(std::to_string(i.m_countOfPages));
+			strings.push_back(std::to_string(i.m_price));
+			strings.push_back(std::to_string(i.m_count));
+
+			for (int j = 0; j < strings.size(); j++)
+			{
+				std::transform(strings[j].begin(), strings[j].end(), strings[j].begin(), ::toupper);
+			}
+
+			if (strings[0].find(m_pImpl->m_search) != std::string::npos)
 				display = true;
-			else if (i.m_author.find(m_pImpl->m_search) != std::string::npos)
+			else if (strings[1].find(m_pImpl->m_search) != std::string::npos)
 				display = true;
-			else if (i.m_genre.find(m_pImpl->m_search) != std::string::npos)
+			else if (strings[2].find(m_pImpl->m_search) != std::string::npos)
 				display = true;
-			else if (std::to_string(i.m_countOfPages).find(m_pImpl->m_search) != std::string::npos)
+			else if (strings[3].find(m_pImpl->m_search) != std::string::npos)
 				display = true;
-			else if (std::to_string(i.m_price).find(m_pImpl->m_search) != std::string::npos)
+			else if (strings[4].find(m_pImpl->m_search) != std::string::npos)
 				display = true;
-			else if (std::to_string(i.m_count).find(m_pImpl->m_search) != std::string::npos)
+			else if (strings[5].find(m_pImpl->m_search) != std::string::npos)
 				display = true;
 			else
 				display = false;
@@ -357,12 +375,12 @@ void ArchiveSystem::CheckClick(int recording)
 					{
 						if (!m_pImpl->m_displayOnlyAvailable)
 						{
-							((sf::Sprite*)m_pImpl->m_objects[19])->setPosition(1082, 40);
+							((sf::Sprite*)m_pImpl->m_objects[20])->setPosition(1082, 40);
 							m_pImpl->m_displayOnlyAvailable = true;
 						}
 						else
 						{
-							((sf::Sprite*)m_pImpl->m_objects[19])->setPosition(-100, 0);
+							((sf::Sprite*)m_pImpl->m_objects[20])->setPosition(-100, 0);
 							m_pImpl->m_displayOnlyAvailable = false;
 						}
 						PlaceElements();
@@ -609,8 +627,8 @@ bool ArchiveSystem::Add()
 					pp.erase(std::remove_if(pp.begin(), pp.end(), isspace), pp.end());
 					cp.erase(std::remove_if(cp.begin(), cp.end(), isspace), cp.end());
 
-					if (np != "" && ap != "" && gp != "" && cpp != "" && pp != "" && cp != "")
-						m_pImpl->m_recordings.push_back(Recording(name_str, author_str, genre_str, std::stoi(countPag_str), std::stoi(price_str), std::stoi(count_str), m_pImpl->m_font));
+					//if (np != "" && ap != "" && gp != "" && cpp != "" && pp != "" && cp != "")
+						//m_pImpl->m_recordings.push_back(Recording(name_str, author_str, genre_str, std::stoi(countPag_str), std::stoi(price_str), std::stoi(count_str), m_pImpl->m_font));
 				}
 				else
 				{
@@ -979,7 +997,7 @@ void ArchiveSystem::Edit(const int& i)
 
 void ArchiveSystem::sort(const int& fieldPos)
 {
-	if (m_pImpl->m_sorted == -1)
+	if (m_pImpl->m_sorted != fieldPos)
 		m_pImpl->m_recordings.sort([&](const Recording& a, const Recording& b)
 			{
 				if (fieldPos == 1)
@@ -1005,7 +1023,7 @@ void ArchiveSystem::sort(const int& fieldPos)
 				if (fieldPos == 5)
 				{
 					m_pImpl->m_sorted = 5;
-					return a.m_price < b.m_price;
+					return a.m_price > b.m_price;
 				}
 				if (fieldPos == 6)
 				{
@@ -1039,7 +1057,7 @@ void ArchiveSystem::sort(const int& fieldPos)
 				if (fieldPos == 5)
 				{
 					m_pImpl->m_sorted = -1;
-					return a.m_price > b.m_price;
+					return a.m_price < b.m_price;
 				}
 				if (fieldPos == 6)
 				{
@@ -1051,12 +1069,35 @@ void ArchiveSystem::sort(const int& fieldPos)
 
 void ArchiveSystem::Save()
 {
-	std::ofstream fout("resourses/recordings.dat", std::ios::out);
+	try
+	{
+		m_pImpl->m_con = m_pImpl->m_driver->connect("localhost", "root", "12222550g");
+	}
+	catch (sql::SQLException e)
+	{
+		std::cerr << "Could connect to server. Error massage: " << e.what() << std::endl;
+		system("pause");
+		exit(1);
+	}
+
+	m_pImpl->m_con->setSchema("bookstore");
+	m_pImpl->m_prestat = m_pImpl->m_con->prepareStatement("UPDATE books SET name = ?, author = ?, genre = ?, pages = ?, price = ?, count = ? WHERE ID = ?");
+
 	for (auto i : m_pImpl->m_recordings)
 	{
-		if (fout.is_open())
-			fout << i.m_name << " " << i.m_author << " " << i.m_genre << " " << i.m_countOfPages << " " << i.m_price << " " << i.m_count << '\n';
+		m_pImpl->m_prestat->setString(1, i.m_name);
+		m_pImpl->m_prestat->setString(2, i.m_author);
+		m_pImpl->m_prestat->setString(3, i.m_genre);
+		m_pImpl->m_prestat->setInt(4, i.m_countOfPages);
+		m_pImpl->m_prestat->setDouble(5, i.m_price);
+		m_pImpl->m_prestat->setInt(6, i.m_count);
+		m_pImpl->m_prestat->setInt(7, i.m_id);
+
+		m_pImpl->m_prestat->executeUpdate();
 	}
+
+	delete m_pImpl->m_con;
+	delete m_pImpl->m_prestat;
 }
 
 bool ArchiveSystem::Exit()
@@ -1186,13 +1227,13 @@ void ArchiveSystem::Do()
 		}
 		else
 			((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 2])->setScale(1, 1);
-		/*
+		
 		if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 		{
 			((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setScale(1.1, 1.1);
 		}
 		else
-			((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setScale(1, 1);*/
+			((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setScale(1, 1);
 		
 		if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Save])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 		{

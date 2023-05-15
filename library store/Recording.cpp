@@ -1,26 +1,39 @@
 #include "Recording.h"
 
-Recording::Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& price, const int& count, const sf::Font& font) : m_name(name), m_author(author), m_genre(genre), m_countOfPages(countOfPages), m_price(price), m_count(count)
+Recording::Recording(sql::ResultSet* res, const sf::Font& font)
+{
+	m_id = res->getInt(1);
+	m_name = res->getString(2);
+	m_author = res->getString(3);
+	m_genre = res->getString(4);
+	m_countOfPages = res->getInt(5);
+	m_price = res->getDouble(6);
+	m_count = res->getInt(7);
+
+	Init(font);
+}
+
+void Recording::Init(const sf::Font& font)
 {
 	m_nameTx.setFont(font);
 	m_nameTx.setFillColor(sf::Color::Black);
 	m_nameTx.setCharacterSize(20);
-	m_nameTx.setString(name);
+	m_nameTx.setString(m_name);
 
 	m_authorTx.setFont(font);
 	m_authorTx.setFillColor(sf::Color::Black);
 	m_authorTx.setCharacterSize(20);
-	m_authorTx.setString(author);
+	m_authorTx.setString(m_author);
 
 	m_genreTx.setFont(font);
 	m_genreTx.setFillColor(sf::Color::Black);
 	m_genreTx.setCharacterSize(20);
-	m_genreTx.setString(genre);
+	m_genreTx.setString(m_genre);
 
 	m_countOfPagesTx.setFont(font);
 	m_countOfPagesTx.setFillColor(sf::Color::Black);
 	m_countOfPagesTx.setCharacterSize(20);
-	m_countOfPagesTx.setString(std::to_string(countOfPages));
+	m_countOfPagesTx.setString(std::to_string(m_countOfPages));
 
 	m_priceTx.setFont(font);
 	m_priceTx.setFillColor(sf::Color::Black);
@@ -30,7 +43,7 @@ Recording::Recording(const std::string& name, const std::string& author, const s
 	m_countTx.setFont(font);
 	m_countTx.setFillColor(sf::Color::Black);
 	m_countTx.setCharacterSize(20);
-	m_countTx.setString(std::to_string(count));
+	m_countTx.setString(std::to_string(m_count));
 }
 
 int Recording::GetY()

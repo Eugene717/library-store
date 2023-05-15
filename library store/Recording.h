@@ -1,9 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <cppconn/prepared_statement.h>
 
 struct Recording :public sf::Drawable
 {
-	Recording(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& price, const int& count, const sf::Font& m_font);
+	Recording(sql::ResultSet* res, const sf::Font& font);
+
 	int GetY();
 	sf::FloatRect getGlobalBounds() const;
 	void Place(const int x, const int y);
@@ -14,6 +16,9 @@ struct Recording :public sf::Drawable
 
 	friend class ArchiveSystem;
 private:
+	void Init(const sf::Font& font);
+
+	int m_id;
 	std::string m_name;
 	std::string m_author;
 	std::string m_genre;
