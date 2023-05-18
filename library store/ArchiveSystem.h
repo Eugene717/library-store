@@ -14,11 +14,13 @@ class ArchiveSystem
 	ArchiveSystem& operator=(const ArchiveSystem&) = delete;
 
 	void SetBasicElements();
-	void CheckClick(int recording);
+	void CheckClick();
+	void CheckEnteringText(sf::Uint32 code);
+	void CheckMousePos();
+	void FixSize();
 	void PlaceElements();
 	void Move(const bool up);
 	void Draw();
-	void SoldOrBuyBook(const bool sold, const int i);
 	void Save();
 	bool Exit();
 public:

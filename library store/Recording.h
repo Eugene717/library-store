@@ -6,7 +6,7 @@ struct Recording :public sf::Drawable
 {
 	Recording(sql::ResultSet* res, const sf::Font& font);
 
-	int GetY();
+	int GetID() const;
 	sf::FloatRect getGlobalBounds() const;
 	void Place(const int x, const int y);
 	void Edit(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& price, const int& count);
@@ -32,4 +32,6 @@ private:
 	sf::Text m_countOfPagesTx;
 	sf::Text m_priceTx;
 	sf::Text m_countTx;
+
+	sf::RectangleShape m_borders;
 };

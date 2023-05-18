@@ -17,10 +17,11 @@ struct ArchiveIMPL
 	sf::Font m_font;
 	std::list<Recording> m_recordings;
 	std::vector<sf::Drawable*> m_objects;
+	Recording* m_rec;
 	int m_sorted;
-	bool m_displayOnlyAvailable;
-	bool m_writeField;
+	bool m_displayOnlyAvailable, m_displaySearched;
 	std::string m_search;
+	Recording* m_writeRec;
 	std::string* m_writeString;
 	sf::Text* m_writeText;
 
@@ -45,10 +46,11 @@ ArchiveSystem::ArchiveSystem()
 
 	m_pImpl->m_font.loadFromFile("resourses/times.ttf");
 
+	m_pImpl->m_rec = nullptr;
 	m_pImpl->m_sorted = -1;
-	m_pImpl->m_displayOnlyAvailable = false;
-	m_pImpl->m_writeField = false;
+	m_pImpl->m_displayOnlyAvailable = m_pImpl->m_displaySearched = false;
 	m_pImpl->m_search = "";
+	m_pImpl->m_writeRec = nullptr;
 	m_pImpl->m_writeString = nullptr;
 	m_pImpl->m_writeText = nullptr;
 
@@ -203,8 +205,8 @@ void ArchiveSystem::SetBasicElements()
 	sf::Sprite* s_save = new sf::Sprite(*t_save);
 	s_save->setOrigin(16, 16);
 	s_save->setPosition(-100, 0);
-	//s_save->setPosition(1250, 685);
 	sf::Sprite* s_goUp = new sf::Sprite(*t_goUp);
+	s_goUp->setOrigin(16, 16);
 	s_goUp->setPosition(-100, 0);
 	sf::Sprite* s_clear = new sf::Sprite(*t_clear);
 	s_clear->setOrigin(16, 16);
@@ -281,7 +283,7 @@ void ArchiveSystem::PlaceElements()
 
 	for (auto& i : m_pImpl->m_recordings)
 	{
-		if (m_pImpl->m_search != "")
+		if (m_pImpl->m_displaySearched)
 		{
 			std::transform(m_pImpl->m_search.begin(), m_pImpl->m_search.end(), m_pImpl->m_search.begin(), ::toupper);
 
@@ -336,19 +338,97 @@ void ArchiveSystem::PlaceElements()
 	((sf::Sprite*)m_pImpl->m_objects[Object::GoUp])->setPosition(-100, 0);
 }
 
-void ArchiveSystem::CheckClick(int recording)
+void ArchiveSystem::CheckClick()
 {
-	if (m_pImpl->m_writeField)
+	if (m_pImpl->m_writeString != nullptr || m_pImpl->m_writeText != nullptr)
 	{
-		m_pImpl->m_writeField = false;
 		m_pImpl->m_writeString = nullptr;
+		m_pImpl->m_writeText = nullptr;
+		m_pImpl->m_writeRec = nullptr;
 	}
 
 	int object = -1;
 
-	for (int i = Object::Add; i <= Object::Clear; i++)
-		if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[i])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-			object = i;
+	if (m_pImpl->m_rec != nullptr)
+	{
+		if ((sf::IntRect(m_pImpl->m_rec->getGlobalBounds().left, m_pImpl->m_rec->getGlobalBounds().top, 250, 35).contains(sf::Mouse::getPosition(m_window))))
+		{
+			auto it = std::find_if(m_pImpl->m_recordings.begin(), m_pImpl->m_recordings.end(), [&](const Recording& a) {
+				return m_pImpl->m_rec->GetID() == a.GetID();
+				});
+
+			m_pImpl->m_writeRec = &(*it);
+			m_pImpl->m_writeString = &(*it).m_name;
+			m_pImpl->m_writeText = &(*it).m_nameTx;
+
+			return;
+		}
+		else if ((sf::IntRect(m_pImpl->m_rec->getGlobalBounds().left + 250, m_pImpl->m_rec->getGlobalBounds().top, 250, 35).contains(sf::Mouse::getPosition(m_window))))
+		{
+			auto it = std::find_if(m_pImpl->m_recordings.begin(), m_pImpl->m_recordings.end(), [&](const Recording& a) {
+				return m_pImpl->m_rec->GetID() == a.GetID();
+				});
+
+			m_pImpl->m_writeRec = &(*it);
+			m_pImpl->m_writeString = &(*it).m_author;
+			m_pImpl->m_writeText = &(*it).m_authorTx;
+
+			return;
+		}
+		else if ((sf::IntRect(m_pImpl->m_rec->getGlobalBounds().left + 500, m_pImpl->m_rec->getGlobalBounds().top, 200, 35).contains(sf::Mouse::getPosition(m_window))))
+		{
+			auto it = std::find_if(m_pImpl->m_recordings.begin(), m_pImpl->m_recordings.end(), [&](const Recording& a) {
+				return m_pImpl->m_rec->GetID() == a.GetID();
+				});
+
+			m_pImpl->m_writeRec = &(*it);
+			m_pImpl->m_writeString = &(*it).m_genre;
+			m_pImpl->m_writeText = &(*it).m_genreTx;
+
+			return;
+		}
+		else if ((sf::IntRect(m_pImpl->m_rec->getGlobalBounds().left + 700, m_pImpl->m_rec->getGlobalBounds().top, 100, 35).contains(sf::Mouse::getPosition(m_window))))
+		{
+			auto it = std::find_if(m_pImpl->m_recordings.begin(), m_pImpl->m_recordings.end(), [&](const Recording& a) {
+				return m_pImpl->m_rec->GetID() == a.GetID();
+				});
+
+			m_pImpl->m_writeRec = &(*it);
+			m_pImpl->m_writeString = nullptr;
+			m_pImpl->m_writeText = &(*it).m_countOfPagesTx;
+
+			return;
+		}
+		else if ((sf::IntRect(m_pImpl->m_rec->getGlobalBounds().left + 800, m_pImpl->m_rec->getGlobalBounds().top, 100, 35).contains(sf::Mouse::getPosition(m_window))))
+		{
+			auto it = std::find_if(m_pImpl->m_recordings.begin(), m_pImpl->m_recordings.end(), [&](const Recording& a) {
+				return m_pImpl->m_rec->GetID() == a.GetID();
+				});
+
+			m_pImpl->m_writeRec = &(*it);
+			m_pImpl->m_writeString = nullptr;
+			m_pImpl->m_writeText = &(*it).m_priceTx;
+
+			return;
+		}
+		else if ((sf::IntRect(m_pImpl->m_rec->getGlobalBounds().left + 900, m_pImpl->m_rec->getGlobalBounds().top, 100, 35).contains(sf::Mouse::getPosition(m_window))))
+		{
+			auto it = std::find_if(m_pImpl->m_recordings.begin(), m_pImpl->m_recordings.end(), [&](const Recording& a) {
+				return m_pImpl->m_rec->GetID() == a.GetID();
+				});
+
+			m_pImpl->m_writeRec = &(*it);
+			m_pImpl->m_writeString = nullptr;
+			m_pImpl->m_writeText = &(*it).m_countTx;
+
+			return;
+		}
+	}
+
+	if (object == -1)
+		for (int i = Object::Add; i <= Object::Clear; i++)
+			if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[i])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				object = i;
 	if (object == -1)
 		for (int i = Object::SortNames; i <= Object::Search; i++)
 			if (sf::IntRect(((sf::RectangleShape*)m_pImpl->m_objects[i])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
@@ -388,19 +468,20 @@ void ArchiveSystem::CheckClick(int recording)
 				if (object == Object::SearchField)
 					if (sf::IntRect(((sf::RectangleShape*)m_pImpl->m_objects[object])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 					{
-						m_pImpl->m_writeField = true;
 						m_pImpl->m_writeString = &m_pImpl->m_search;
 						m_pImpl->m_writeText = (sf::Text*)m_pImpl->m_objects[Object::SearchText];
 					}
 				if (object == Object::Search)
 					if (sf::IntRect(((sf::RectangleShape*)m_pImpl->m_objects[object])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 					{
-						m_pImpl->m_writeField = false;
 						m_pImpl->m_writeString = nullptr;
 						m_pImpl->m_writeText = nullptr;
 						if (m_pImpl->m_search != "")
+						{
+							m_pImpl->m_displaySearched = true;
 							((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setPosition(687, 30);
-						PlaceElements();
+							PlaceElements();
+						}
 					}
 				if (object == Object::Save)
 					if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[object])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
@@ -411,7 +492,6 @@ void ArchiveSystem::CheckClick(int recording)
 				if (object == Object::Clear)
 					if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[object])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 					{
-						m_pImpl->m_writeField = true;
 						m_pImpl->m_writeString = &m_pImpl->m_search;
 						m_pImpl->m_writeText = (sf::Text*)m_pImpl->m_objects[Object::SearchText];
 						((sf::Sprite*)m_pImpl->m_objects[object])->setPosition(-100, 0);
@@ -424,15 +504,22 @@ void ArchiveSystem::CheckClick(int recording)
 					if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[object])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 					{
 						((sf::Sprite*)m_pImpl->m_objects[object])->setScale(1, 1);
+						((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setPosition(1250, 685);
+
 						Add();
 						PlaceElements();
 					}
 				if (object == Object::Minus || object == Object::Plus)
-					if (recording != -1)
+					if (m_pImpl->m_rec != nullptr)
 						if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[object])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 						{
-							SoldOrBuyBook(object % 2, recording);
-							PlaceElements();
+							auto it = std::find_if(m_pImpl->m_recordings.begin(), m_pImpl->m_recordings.end(), [&](const Recording& a) {
+								return m_pImpl->m_rec->GetID() == a.GetID();
+								});
+
+							it->SoldOrBuyBook(object % 2);
+
+							((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setPosition(1250, 685);
 						}
 				if (object == Object::GoUp)
 					if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[object])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
@@ -446,10 +533,238 @@ void ArchiveSystem::CheckClick(int recording)
 	}
 }
 
+void ArchiveSystem::CheckEnteringText(sf::Uint32 code)
+{
+	if (m_pImpl->m_writeString == nullptr && m_pImpl->m_writeText == nullptr)
+		return;
+
+	if (code == 13)
+	{
+		if (m_pImpl->m_writeString == &m_pImpl->m_search)
+		{
+			m_pImpl->m_displaySearched = true;
+			PlaceElements();
+		}
+
+		m_pImpl->m_writeString = nullptr;
+		m_pImpl->m_writeText = nullptr;
+		m_pImpl->m_writeRec = nullptr;
+	}
+	else if (code == '\b')
+	{		
+		if (m_pImpl->m_writeString == nullptr)
+		{
+			std::string str = m_pImpl->m_writeText->getString();
+			if (str.size() > 0)
+			{
+				str.pop_back();
+				if (str.size() == 0)
+					str = "0";
+
+				m_pImpl->m_writeText->setString(str);
+
+				if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countOfPagesTx)
+					m_pImpl->m_writeRec->m_countOfPages = std::stoi(str);
+				else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_priceTx)
+					m_pImpl->m_writeRec->m_price = std::stof(str);
+				else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countTx)
+					m_pImpl->m_writeRec->m_count = std::stoi(str);
+			}
+		}
+		else if (m_pImpl->m_writeString->size() > 0)
+		{
+			m_pImpl->m_writeString->pop_back();
+			m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
+		}
+
+		if (m_pImpl->m_writeString == &m_pImpl->m_search)
+		{
+			if (m_pImpl->m_writeString->size() == 0)
+				if (m_pImpl->m_writeString == &m_pImpl->m_search)
+					((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setPosition(-100, 0);
+		}
+		else
+			((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setPosition(1250, 685);
+	}
+	else if (m_pImpl->m_writeString == nullptr)
+	{
+		if ((code >= 48 && code <= 57) || code == 46 || code == 44)
+		{
+			std::string str = m_pImpl->m_writeText->getString();
+
+			if (code == 46 || code == 44)
+			{
+				if (str.find('.') == std::string::npos)
+					str += '.';
+			}
+			else
+			{
+				if (str == "0")
+				{
+					str.pop_back();
+					str += static_cast<char>(code);
+				}
+				else if (int pos = str.find('.'); pos != std::string::npos)
+				{
+					if (str.size() - 3 != pos)
+						str += static_cast<char>(code);
+					else
+						return;
+				}
+				else
+					str += static_cast<char>(code);
+			}
+
+			((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setPosition(1250, 685);
+
+			m_pImpl->m_writeText->setString(str);
+
+			if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countOfPagesTx)
+				m_pImpl->m_writeRec->m_countOfPages = std::stoi(m_pImpl->m_writeText->getString().toWideString());
+			else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_priceTx)
+				m_pImpl->m_writeRec->m_price = std::stof(m_pImpl->m_writeRec->m_priceTx.getString().toWideString());
+			else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countTx)
+				m_pImpl->m_writeRec->m_count = std::stoi(m_pImpl->m_writeRec->m_countTx.getString().toWideString());
+		}
+	}
+	else if (code < 128)
+	{
+		if (m_pImpl->m_writeString == &m_pImpl->m_search)
+			((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setPosition(687, 30);
+		else
+			((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setPosition(1250, 685);
+
+		if (m_pImpl->m_writeString->size() < 30)
+		{
+			*m_pImpl->m_writeString += static_cast<char>(code);
+			m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
+		}
+	}
+
+	FixSize();
+}
+
+void ArchiveSystem::CheckMousePos()
+{
+	if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Add])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+	{
+		((sf::Sprite*)m_pImpl->m_objects[Object::Add])->setScale(1.1, 1.1);
+	}
+	else
+		((sf::Sprite*)m_pImpl->m_objects[Object::Add])->setScale(1, 1);
+
+	if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 2])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+	{
+		((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 2])->setScale(1.1, 1.1);
+	}
+	else
+		((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 2])->setScale(1, 1);
+
+	if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+	{
+		((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setScale(1.1, 1.1);
+	}
+	else
+		((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setScale(1, 1);
+
+	if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Save])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+	{
+		((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setScale(1.1, 1.1);
+	}
+	else
+		((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setScale(1, 1);
+
+	if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::GoUp])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+	{
+		((sf::Sprite*)m_pImpl->m_objects[Object::GoUp])->setScale(1.1, 1.1);
+	}
+	else
+		((sf::Sprite*)m_pImpl->m_objects[Object::GoUp])->setScale(1, 1);
+
+	if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Save])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+	{
+		((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setScale(1.1, 1.1);
+	}
+	else
+		((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setScale(1, 1);
+
+	if (m_pImpl->m_search != "")
+		if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 3])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+		{
+			((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 3])->setScale(1.1, 1.1);
+		}
+		else
+			((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 3])->setScale(1, 1);
+}
+
+void ArchiveSystem::FixSize()
+{
+	if (m_pImpl->m_writeRec != nullptr)
+	{
+		if (m_pImpl->m_writeString != nullptr)
+		{
+			if (m_pImpl->m_writeString == &m_pImpl->m_writeRec->m_name || m_pImpl->m_writeString == &m_pImpl->m_writeRec->m_author)
+			{
+				if (m_pImpl->m_writeText->getGlobalBounds().width >= 240)
+				{
+					m_pImpl->m_writeString->pop_back();
+					m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
+				}
+			}
+			else if (m_pImpl->m_writeString == &m_pImpl->m_writeRec->m_genre)
+			{
+				if (m_pImpl->m_writeText->getGlobalBounds().width >= 190)
+				{
+					m_pImpl->m_writeString->pop_back();
+					m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
+				}
+			}
+		}
+		else
+		{
+			if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countOfPagesTx || m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_priceTx || m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countTx)
+			{
+				if (m_pImpl->m_writeText->getGlobalBounds().width >= 90)
+				{
+					std::string str = m_pImpl->m_writeText->getString();
+					str.pop_back();
+
+					if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countOfPagesTx)
+					{
+						m_pImpl->m_writeRec->m_countOfPages = std::stoi(str);
+						m_pImpl->m_writeText->setString(str);
+					}
+					else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_priceTx)
+					{
+						m_pImpl->m_writeRec->m_countOfPages = std::stof(str);
+						m_pImpl->m_writeText->setString(str);
+					}
+					else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countTx)
+					{
+						m_pImpl->m_writeRec->m_countOfPages = std::stoi(str);
+						m_pImpl->m_writeText->setString(str);
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		if (m_pImpl->m_writeString == &m_pImpl->m_search)
+		{
+			if (m_pImpl->m_writeText->getGlobalBounds().width >= 490)
+			{
+				m_pImpl->m_writeString->pop_back();
+				m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
+			}
+		}
+	}
+}
+
 void ArchiveSystem::Move(const bool up)
 {
 	if (up)
-		if (m_pImpl->m_recordings.begin()->GetY() >= 130)
+		if (m_pImpl->m_recordings.begin()->getGlobalBounds().top >= 130)
 			return;
 
 	if (up)
@@ -462,18 +777,10 @@ void ArchiveSystem::Move(const bool up)
 		i.Move(up);
 	}
 
-	if (m_pImpl->m_recordings.begin()->GetY() >= 130)
+	if (m_pImpl->m_recordings.begin()->getGlobalBounds().top >= 130)
 		((sf::Sprite*)m_pImpl->m_objects[Object::GoUp])->setPosition(-100, 0);
 	else
-		((sf::Sprite*)m_pImpl->m_objects[Object::GoUp])->setPosition(50, 650);
-}
-
-void ArchiveSystem::SoldOrBuyBook(const bool sold, const int i)
-{
-	auto l_iter = m_pImpl->m_recordings.begin();
-	std::advance(l_iter, i);
-
-	l_iter->SoldOrBuyBook(sold);
+		((sf::Sprite*)m_pImpl->m_objects[Object::GoUp])->setPosition(56, 666);
 }
 
 bool ArchiveSystem::Add()
@@ -1102,11 +1409,74 @@ void ArchiveSystem::Save()
 
 bool ArchiveSystem::Exit()
 {
-	if (true)
+	sf::RectangleShape exit(sf::Vector2f(500, 300));
+	exit.setOrigin(250, 150);
+	exit.setPosition(640, 360);
+	exit.setOutlineThickness(3);
+	exit.setOutlineColor(sf::Color::Black);
+	exit.setFillColor(sf::Color(120, 120, 120));
+
+	sf::RectangleShape no(sf::Vector2f(150, 50));
+	no.setOrigin(75, 25);
+	no.setPosition(520, 460);
+	no.setOutlineThickness(3);
+	no.setOutlineColor(sf::Color::Black);
+	no.setFillColor(sf::Color(100, 100, 100));
+
+	sf::RectangleShape yes(sf::Vector2f(150, 50));
+	yes.setOrigin(75, 25);
+	yes.setPosition(760, 460);
+	yes.setOutlineThickness(3);
+	yes.setOutlineColor(sf::Color::Black);
+	yes.setFillColor(sf::Color(100, 100, 100));
+
+	sf::Text noTX("No", m_pImpl->m_font);
+	noTX.setFillColor(sf::Color::Black);
+	noTX.setOrigin(noTX.getGlobalBounds().width / 2, noTX.getGlobalBounds().height / 2);
+	noTX.setPosition(520, 450);
+
+	sf::Text yesTX("Yes", m_pImpl->m_font);
+	yesTX.setFillColor(sf::Color::Black);
+	yesTX.setOrigin(yesTX.getGlobalBounds().width / 2, yesTX.getGlobalBounds().height / 2);
+	yesTX.setPosition(760, 450);
+
+	sf::Text exitTX("Do you want to save the files?", m_pImpl->m_font);
+	exitTX.setFillColor(sf::Color::Black);
+	exitTX.setOrigin(exitTX.getGlobalBounds().width / 2, exitTX.getGlobalBounds().height / 2);
+	exitTX.setPosition(640, 320);
+
+	m_window.draw(exit);
+	m_window.draw(no);
+	m_window.draw(yes);
+	m_window.draw(noTX);
+	m_window.draw(yesTX);
+	m_window.draw(exitTX);
+	m_window.display();
+
+	sf::Event event;
+	while(m_window.isOpen())
 	{
-		Save();
-		m_window.close();
-		return true;
+		while (m_window.pollEvent(event))
+		{
+			if (event.type == sf::Event::MouseButtonPressed && event.key.code == sf::Mouse::Left)
+			{
+				if (sf::IntRect(no.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					m_window.close();
+					return true;
+				}
+				else if (sf::IntRect(yes.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					Save();
+					m_window.close();
+					return true;
+				}
+				else if (!sf::IntRect(exit.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					return false;
+				}
+			}
+		}
 	}
 
 	return false;
@@ -1144,9 +1514,7 @@ void ArchiveSystem::Draw()
 }
 
 void ArchiveSystem::Do()
-{	
-	int n = -1;
-
+{
 	sf::Event event;
 	while (m_window.isOpen())
 	{
@@ -1159,7 +1527,7 @@ void ArchiveSystem::Do()
 			}
 			if (event.type == sf::Event::MouseButtonPressed && event.key.code == sf::Mouse::Left)
 			{
-				CheckClick(n);
+				CheckClick();
 			}
 			if (event.type == sf::Event::MouseWheelMoved)
 			{
@@ -1173,89 +1541,29 @@ void ArchiveSystem::Do()
 			}
 			if (event.type == sf::Event::TextEntered)
 			{
-				if (m_pImpl->m_writeString != nullptr)
-				{
-					if (event.text.unicode == 13)
-					{
-						if (m_pImpl->m_writeString == &m_pImpl->m_search)
-						{
-							((sf::Sprite*)m_pImpl->m_objects[Clear])->setPosition(687, 30);
-							PlaceElements();
-						}
-
-						m_pImpl->m_writeField = false;
-						m_pImpl->m_writeString = nullptr;
-						m_pImpl->m_writeText = nullptr;
-					}
-					else if (event.text.unicode == '\b')
-					{
-						if (m_pImpl->m_writeString->size() > 0)
-						{
-							m_pImpl->m_writeString->pop_back();
-							m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
-						}
-
-						if (m_pImpl->m_writeString->size() == 0)
-							if (m_pImpl->m_writeString == &m_pImpl->m_search)
-								((sf::Sprite*)m_pImpl->m_objects[Clear])->setPosition(-100, 0);
-					}
-					else if (event.text.unicode < 128)
-					{
-						if (m_pImpl->m_writeString == &m_pImpl->m_search)
-							((sf::Sprite*)m_pImpl->m_objects[Clear])->setPosition(687, 30);
-
-						if (m_pImpl->m_writeString->size() < 30)
-						{
-							*m_pImpl->m_writeString += static_cast<char>(event.text.unicode);
-							m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
-						}
-					}
-				}
+				CheckEnteringText(event.text.unicode);
 			}
 		}
 
-		if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Add])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-		{
-			((sf::Sprite*)m_pImpl->m_objects[Object::Add])->setScale(1.1, 1.1);
-		}
-		else
-			((sf::Sprite*)m_pImpl->m_objects[Object::Add])->setScale(1, 1);
-		
-		if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 2])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-		{
-			((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 2])->setScale(1.1, 1.1);
-		}
-		else
-			((sf::Sprite*)m_pImpl->m_objects[Object::GoUp + 2])->setScale(1, 1);
-		
-		if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-		{
-			((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setScale(1.1, 1.1);
-		}
-		else
-			((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setScale(1, 1);
-		
-		if (sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Save])->getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-		{
-			((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setScale(1.1, 1.1);
-		}
-		else
-			((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setScale(1, 1);
+		CheckMousePos();
 
 		if (!sf::IntRect(((sf::Sprite*)m_pImpl->m_objects[Object::Minus])->getPosition().x - 10, ((sf::Sprite*)m_pImpl->m_objects[Object::Minus])->getPosition().y, 74, 42).contains(sf::Mouse::getPosition(m_window)))
 		{
-			n = -1;
+			m_pImpl->m_rec = nullptr;
 			((sf::Sprite*)m_pImpl->m_objects[Object::Plus])->setPosition(-100, 0);
 			((sf::Sprite*)m_pImpl->m_objects[Object::Minus])->setPosition(-100, 0);
 
 			for (auto i : m_pImpl->m_recordings)
 			{
-				n++;
-				if (sf::IntRect(i.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				if (i.getGlobalBounds().top >= 100)
 				{
-					((sf::Sprite*)m_pImpl->m_objects[Object::Minus])->setPosition(1105, i.GetY() - 5);
-					((sf::Sprite*)m_pImpl->m_objects[Object::Plus])->setPosition(1137, i.GetY() - 5);
-					break;
+					if (sf::IntRect(i.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+					{
+						m_pImpl->m_rec = &i;
+						((sf::Sprite*)m_pImpl->m_objects[Object::Minus])->setPosition(1105, i.getGlobalBounds().top);
+						((sf::Sprite*)m_pImpl->m_objects[Object::Plus])->setPosition(1137, i.getGlobalBounds().top);
+						break;
+					}
 				}
 			}
 		}
