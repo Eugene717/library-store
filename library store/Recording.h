@@ -5,6 +5,7 @@
 struct Recording :public sf::Drawable
 {
 	Recording(sql::ResultSet* res, const sf::Font& font);
+	Recording(int id, std::string name, std::string author, std::string genre, int countOfPages, int price, int count, sf::Font& font);
 
 	int GetID() const;
 	sf::FloatRect getGlobalBounds() const;

@@ -22,13 +22,15 @@ class ArchiveSystem
 	void Move(const bool up);
 	void Draw();
 	void Save();
+	bool AddBook();
+	void DeleteBook();
 	bool Exit();
 public:
 	sf::RenderWindow m_window;
 	static ArchiveSystem* GetInstance();
 
 	void Do();
-	bool Add();
+	void Add();
 	void Edit(const int& i);
 	void sort(const int& fieldPos);
 };

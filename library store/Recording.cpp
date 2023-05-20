@@ -13,6 +13,12 @@ Recording::Recording(sql::ResultSet* res, const sf::Font& font)
 	Init(font);
 }
 
+Recording::Recording(int id, std::string name, std::string author, std::string genre, int countOfPages, int price, int count, sf::Font& font)
+	:m_id(id), m_name(name), m_author(author), m_genre(genre), m_countOfPages(countOfPages), m_price(price), m_count(count)
+{
+	Init(font);
+}
+
 void Recording::Init(const sf::Font& font)
 {
 	m_nameTx.setFont(font);
