@@ -694,49 +694,71 @@ void ArchiveSystem::CheckEnteringText(sf::Uint32 code)
 		else
 			((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setPosition(1250, 685);
 	}
-	else if (m_pImpl->m_writeString == nullptr)
+	else if (m_pImpl->m_writeString == nullptr || m_pImpl->m_writeString == &m_pImpl->m_toAddStrings[3] || m_pImpl->m_writeString == &m_pImpl->m_toAddStrings[4] || m_pImpl->m_writeString == &m_pImpl->m_toAddStrings[5])
 	{
 		if ((code >= 48 && code <= 57) || code == 46 || code == 44)
 		{
-			std::string str = m_pImpl->m_writeText->getString();
+			std::string* str;
+
+			if (m_pImpl->m_writeString == nullptr)
+				str = new std::string(m_pImpl->m_writeText->getString());
+			else
+				str = m_pImpl->m_writeString;
 
 			if (code == 46 || code == 44)
 			{
-				if (str.find('.') == std::string::npos)
-					str += '.';
+				if (str->find('.') == std::string::npos)
+					*str += '.';
 			}
 			else
 			{
-				if (str == "0")
+				if (*str == "0")
 				{
-					str.pop_back();
-					str += static_cast<char>(code);
+					str->pop_back();
+					*str += static_cast<char>(code);
 				}
-				else if (int pos = str.find('.'); pos != std::string::npos)
+				else if (int pos = str->find('.'); pos != std::string::npos)
 				{
-					if (str.size() - 3 != pos)
-						str += static_cast<char>(code);
+					if (str->size() - 3 != pos)
+						*str += static_cast<char>(code);
 					else
 						return;
 				}
 				else
-					str += static_cast<char>(code);
+					*str += static_cast<char>(code);
 			}
 
-			((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setPosition(1250, 685);
+			if (m_pImpl->m_writeString == nullptr)
+			{
+				((sf::Sprite*)m_pImpl->m_objects[Object::Save])->setPosition(1250, 685);
 
-			m_pImpl->m_writeText->setString(str);
+				m_pImpl->m_writeText->setString(*str);
 
-			if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countOfPagesTx)
-				m_pImpl->m_writeRec->m_countOfPages = std::stoi(m_pImpl->m_writeText->getString().toWideString());
-			else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_priceTx)
-				m_pImpl->m_writeRec->m_price = std::stof(m_pImpl->m_writeRec->m_priceTx.getString().toWideString());
-			else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countTx)
-				m_pImpl->m_writeRec->m_count = std::stoi(m_pImpl->m_writeRec->m_countTx.getString().toWideString());
+				if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countOfPagesTx)
+					m_pImpl->m_writeRec->m_countOfPages = std::stoi(m_pImpl->m_writeText->getString().toWideString());
+				else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_priceTx)
+					m_pImpl->m_writeRec->m_price = std::stof(m_pImpl->m_writeRec->m_priceTx.getString().toWideString());
+				else if (m_pImpl->m_writeText == &m_pImpl->m_writeRec->m_countTx)
+					m_pImpl->m_writeRec->m_count = std::stoi(m_pImpl->m_writeRec->m_countTx.getString().toWideString());
+			}
+			else
+			{
+				m_pImpl->m_writeText->setString(*str);
+			}
 		}
 	}
 	else if (code < 128)
 	{
+		if (code == 32)
+		{
+			std::string str = *m_pImpl->m_writeString;
+
+			str.erase(std::remove_if(str.begin(), str.end(), isspace), str.end());
+
+			if (str == "")
+				return;
+		}
+
 		if (m_pImpl->m_writeString == &m_pImpl->m_search)
 			((sf::Sprite*)m_pImpl->m_objects[Object::Clear])->setPosition(687, 30);
 		else if (m_pImpl->m_objects.size() <= 31)
@@ -868,6 +890,30 @@ void ArchiveSystem::FixSize()
 		if (m_pImpl->m_writeString == &m_pImpl->m_search)
 		{
 			if (m_pImpl->m_writeText->getGlobalBounds().width >= 490)
+			{
+				m_pImpl->m_writeString->pop_back();
+				m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
+			}
+		}
+		else if (m_pImpl->m_writeString == &m_pImpl->m_toAddStrings[0] || m_pImpl->m_writeString == &m_pImpl->m_toAddStrings[1])
+		{
+			if (m_pImpl->m_writeText->getGlobalBounds().width >= 240)
+			{
+				m_pImpl->m_writeString->pop_back();
+				m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
+			}
+		}
+		else if (m_pImpl->m_writeString == &m_pImpl->m_toAddStrings[2])
+		{
+			if (m_pImpl->m_writeText->getGlobalBounds().width >= 190)
+			{
+				m_pImpl->m_writeString->pop_back();
+				m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
+			}
+		}
+		else if (m_pImpl->m_writeString == &m_pImpl->m_toAddStrings[3] || m_pImpl->m_writeString == &m_pImpl->m_toAddStrings[4] || m_pImpl->m_writeString == &m_pImpl->m_toAddStrings[5])
+		{
+			if (m_pImpl->m_writeText->getGlobalBounds().width >= 90)
 			{
 				m_pImpl->m_writeString->pop_back();
 				m_pImpl->m_writeText->setString(*m_pImpl->m_writeString);
@@ -1376,6 +1422,57 @@ void ArchiveSystem::Save()
 	}
 
 	m_pImpl->m_con->setSchema("bookstore");
+
+	m_pImpl->m_prestat = m_pImpl->m_con->prepareStatement("SELECT 1 FROM books WHERE ID = ?");
+	sql::PreparedStatement* insert = m_pImpl->m_con->prepareStatement("INSERT INTO books(ID, name, author, genre, pages, price, count) Values(?, ?, ?, ?, ?, ?, ?)");
+
+	for (auto i : m_pImpl->m_recordings)
+	{
+		m_pImpl->m_prestat->setInt(1, i.GetID());
+
+		m_pImpl->m_res = m_pImpl->m_prestat->executeQuery();
+
+		if (m_pImpl->m_res->next())
+		{
+			continue;
+		}
+		else
+		{
+			insert->setInt(1, i.m_id);
+			insert->setString(2, i.m_name);
+			insert->setString(3, i.m_author);
+			insert->setString(4, i.m_genre);
+			insert->setInt(5, i.m_countOfPages);
+			insert->setInt(6, i.m_price);
+			insert->setInt(7, i.m_count);
+
+			insert->executeUpdate();
+		}
+	}
+
+	delete m_pImpl->m_prestat;
+	delete insert;
+	delete m_pImpl->m_res;
+
+	m_pImpl->m_prestat = m_pImpl->m_con->prepareStatement("DELETE FROM books WHERE ID = ?");
+	m_pImpl->m_stat = m_pImpl->m_con->createStatement();
+	m_pImpl->m_res = m_pImpl->m_stat->executeQuery("SELECT ID FROM books");
+
+	while (m_pImpl->m_res->next())
+	{
+		if (std::find_if_not(m_pImpl->m_recordings.begin(), m_pImpl->m_recordings.end(), [&](Recording& a) {
+			return m_pImpl->m_res->getInt(1) != a.GetID();
+			}) == m_pImpl->m_recordings.end())
+		{
+			m_pImpl->m_prestat->setInt(1, m_pImpl->m_res->getInt(1));
+			m_pImpl->m_prestat->executeUpdate();
+		}
+	}
+
+	delete m_pImpl->m_stat;
+	delete m_pImpl->m_prestat;
+	delete m_pImpl->m_res;
+
 	m_pImpl->m_prestat = m_pImpl->m_con->prepareStatement("UPDATE books SET name = ?, author = ?, genre = ?, pages = ?, price = ?, count = ? WHERE ID = ?");
 
 	for (auto i : m_pImpl->m_recordings)
@@ -1391,8 +1488,8 @@ void ArchiveSystem::Save()
 		m_pImpl->m_prestat->executeUpdate();
 	}
 
-	delete m_pImpl->m_con;
 	delete m_pImpl->m_prestat;
+	delete m_pImpl->m_con;
 }
 
 bool ArchiveSystem::AddBook()
