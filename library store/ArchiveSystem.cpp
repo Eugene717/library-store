@@ -84,6 +84,10 @@ ArchiveSystem::ArchiveSystem()
 	delete m_pImpl->m_stat;
 	delete m_pImpl->m_res;
 
+	m_pImpl->m_con = nullptr;	
+	m_pImpl->m_stat = nullptr;
+	m_pImpl->m_res = nullptr;
+
 	SetBasicElements();
 	PlaceElements();
 }
@@ -1066,276 +1070,6 @@ void ArchiveSystem::Add()
 	m_pImpl->m_objects.push_back(add);
 }
 
-void ArchiveSystem::Edit(const int& i)
-{
-	/*auto l_iter = m_pImpl->m_recordings.begin();
-	std::advance(l_iter, i);
-
-	std::string name_str = l_iter->m_name, author_str = l_iter->m_author, genre_str = l_iter->m_genre, countPag_str = std::to_string(l_iter->m_countOfPages), 
-		count_str = std::to_string(l_iter->m_count), countTaked_str = std::to_string(l_iter->m_price);
-	bool name_enter = false, author_enter = false, genre_enter = false, countPag_enter = false, count_enter = false, countTaked_enter = false;
-
-	sf::RectangleShape menu;
-	menu.setSize(sf::Vector2f(500, 400));
-	menu.setOrigin(250, 200);
-	menu.setPosition(640, 350);
-	menu.setOutlineThickness(4);
-	menu.setOutlineColor(sf::Color::Black);
-
-	sf::Texture t_delete;
-	t_delete.loadFromFile("resourses/trash.png");
-	sf::Sprite s_delete(t_delete);
-	s_delete.setPosition(850, 500);
-
-	sf::Text editBook("Edit book", m_pImpl->m_font, 30);
-	editBook.setFillColor(sf::Color::Black);
-	editBook.setPosition(580, 150);
-	sf::Text name("Name:   " + name_str, m_pImpl->m_font, 24);
-	name.setFillColor(sf::Color::Black);
-	name.setPosition(400, 240);
-	sf::Text author("Author: " + author_str, m_pImpl->m_font, 24);
-	author.setFillColor(sf::Color::Black);
-	author.setPosition(400, 280);
-	sf::Text genre("Genre:  " + genre_str, m_pImpl->m_font, 24);
-	genre.setFillColor(sf::Color::Black);
-	genre.setPosition(400, 320);
-	sf::Text countOfPages("Count of pages: " + countPag_str, m_pImpl->m_font, 24);
-	countOfPages.setFillColor(sf::Color::Black);
-	countOfPages.setPosition(400, 360);
-	sf::Text count("Count: " + count_str, m_pImpl->m_font, 24);
-	count.setFillColor(sf::Color::Black);
-	count.setPosition(400, 400);
-	sf::Text countTaked("Count of taked: " + countTaked_str, m_pImpl->m_font, 24);
-	countTaked.setFillColor(sf::Color::Black);
-	countTaked.setPosition(400, 440);
-	sf::Text edit("Edit", m_pImpl->m_font, 30);
-	edit.setFillColor(sf::Color::Black);
-	edit.setPosition(615, 490);
-
-	sf::RectangleShape nameForm;
-	nameForm.setSize(sf::Vector2f(390, 30));
-	nameForm.setPosition(487, 243);
-	nameForm.setOutlineThickness(2);
-	nameForm.setOutlineColor(sf::Color::Black);
-	sf::RectangleShape authorForm;
-	authorForm.setSize(sf::Vector2f(390, 30));
-	authorForm.setPosition(487, 283);
-	authorForm.setOutlineThickness(2);
-	authorForm.setOutlineColor(sf::Color::Black);
-	sf::RectangleShape genreForm;
-	genreForm.setSize(sf::Vector2f(390, 30));
-	genreForm.setPosition(487, 323);
-	genreForm.setOutlineThickness(2);
-	genreForm.setOutlineColor(sf::Color::Black);
-	sf::RectangleShape countPagForm;
-	countPagForm.setSize(sf::Vector2f(293, 30));
-	countPagForm.setPosition(584, 363);
-	countPagForm.setOutlineThickness(2);
-	countPagForm.setOutlineColor(sf::Color::Black);
-	sf::RectangleShape countForm;
-	countForm.setSize(sf::Vector2f(150, 30));
-	countForm.setPosition(477, 403);
-	countForm.setOutlineThickness(2);
-	countForm.setOutlineColor(sf::Color::Black);
-	sf::RectangleShape countTakedForm;
-	countTakedForm.setSize(sf::Vector2f(150, 30));
-	countTakedForm.setPosition(577, 443);
-	countTakedForm.setOutlineThickness(2);
-	countTakedForm.setOutlineColor(sf::Color::Black);
-	sf::RectangleShape editForm;
-	editForm.setSize(sf::Vector2f(75, 32));
-	editForm.setPosition(605, 493);
-	editForm.setOutlineThickness(2);
-	editForm.setOutlineColor(sf::Color::Black);
-
-	sf::Event event;
-	while (m_window.isOpen())
-	{
-		while (m_window.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed)
-				m_window.close();
-			if (event.type == sf::Event::MouseButtonReleased && event.key.code == sf::Mouse::Left)
-			{
-				if (sf::IntRect(nameForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-				{
-					name_enter = true;
-					author_enter = false;
-					genre_enter = false;
-					countPag_enter = false;
-					count_enter = false;
-					countTaked_enter = false;
-				}
-				else if (sf::IntRect(authorForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-				{
-					name_enter = false;
-					author_enter = true;
-					genre_enter = false;
-					countPag_enter = false;
-					count_enter = false;
-					countTaked_enter = false;
-				}
-				else if (sf::IntRect(genreForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-				{
-					name_enter = false;
-					author_enter = false;
-					genre_enter = true;
-					countPag_enter = false;
-					count_enter = false;
-					countTaked_enter = false;
-				}
-				else if (sf::IntRect(countPagForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-				{
-					name_enter = false;
-					author_enter = false;
-					genre_enter = false;
-					countPag_enter = true;
-					count_enter = false;
-					countTaked_enter = false;
-				}
-				else if (sf::IntRect(countForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-				{
-					name_enter = false;
-					author_enter = false;
-					genre_enter = false;
-					countPag_enter = false;
-					count_enter = true;
-					countTaked_enter = false;
-				}
-				else if (sf::IntRect(countTakedForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-				{
-					name_enter = false;
-					author_enter = false;
-					genre_enter = false;
-					countPag_enter = false;
-					count_enter = false;
-					countTaked_enter = true;
-				}
-				else if (sf::IntRect(editForm.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-				{
-					auto np = name_str;
-					auto ap = author_str;
-					auto gp = genre_str;
-					auto cpp = countPag_str;
-					auto cp = count_str;
-					np.erase(std::remove_if(np.begin(), np.end(), isspace), np.end());
-					ap.erase(std::remove_if(ap.begin(), ap.end(), isspace), ap.end());
-					gp.erase(std::remove_if(gp.begin(), gp.end(), isspace), gp.end());
-					cpp.erase(std::remove_if(cpp.begin(), cpp.end(), isspace), cpp.end());
-					cp.erase(std::remove_if(cp.begin(), cp.end(), isspace), cp.end());
-
-					if (np != "" && ap != "" && gp != "" && cpp != "" && cp != "")
-					{
-						if (std::stoi(count_str) > 0 && std::stoi(countPag_str) > 0)
-						{
-							if (std::stoi(countTaked_str) > 0 && std::stoi(countTaked_str) <= std::stoi(count_str))
-							{
-								l_iter->Edit(name_str, author_str, genre_str, std::stoi(countPag_str), std::stoi(count_str), std::stoi(countTaked_str));
-								return;
-							}
-						}
-					}
-				}
-				else if (sf::IntRect(s_delete.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-				{
-					m_pImpl->m_recordings.erase(l_iter);
-					return;
-				}
-				else
-				{
-					name_enter = false;
-					author_enter = false;
-					genre_enter = false;
-					countPag_enter = false;
-					count_enter = false;
-				}
-				if (!sf::IntRect(menu.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
-					return;
-			}
-			if (event.type == sf::Event::TextEntered && (name_enter || author_enter || genre_enter || countPag_enter || count_enter || countTaked_enter))
-			{
-				std::string* str = nullptr;
-				if (name_enter)
-					str = &name_str;
-				else if (author_enter)
-					str = &author_str;
-				else if (genre_enter)
-					str = &genre_str;
-				else if (countPag_enter)
-					str = &countPag_str;
-				else if (count_enter)
-					str = &count_str;
-				else if (countTaked_enter)
-					str = &countTaked_str;
-
-				if (str != nullptr)
-				{
-					if (event.text.unicode == '\b')
-					{
-						if (str->size() > 0)
-						{
-							str->pop_back();
-							if (name_enter)
-								name.setString("Name:   " + *str);
-							else if (author_enter)
-								author.setString("Author: " + *str);
-							else if (genre_enter)
-								genre.setString("Genre:  " + *str);
-							else if (countPag_enter)
-								countOfPages.setString("Count of pages: " + *str);
-							else if (count_enter)
-								count.setString("Count: " + *str);
-							else if (countTaked_enter)
-								countTaked.setString("Count of taked: " + *str);
-						}
-					}
-					else if (event.text.unicode < 128)
-					{
-						if (str->size() < 30)
-						{
-							*str += static_cast<char>(event.text.unicode);
-							if (name_enter)
-								name.setString("Name:   " + *str);
-							else if (author_enter)
-								author.setString("Author: " + *str);
-							else if (genre_enter)
-								genre.setString("Genre:  " + *str);
-							else if (countPag_enter)
-								countOfPages.setString("Count of pages: " + *str);
-							else if (count_enter)
-								count.setString("Count: " + *str);
-							else if (countTaked_enter)
-								countTaked.setString("Count of taked: " + *str);
-						}
-					}
-				}
-			}
-		}
-
-		m_window.draw(menu);
-
-		m_window.draw(nameForm);
-		m_window.draw(authorForm);
-		m_window.draw(genreForm);
-		m_window.draw(countPagForm);
-		m_window.draw(countForm);
-		m_window.draw(countTakedForm);
-		m_window.draw(editForm);
-
-		m_window.draw(name);
-		m_window.draw(author);
-		m_window.draw(genre);
-		m_window.draw(countOfPages);
-		m_window.draw(count);
-		m_window.draw(countTaked);
-		m_window.draw(edit);
-		m_window.draw(editBook);
-		m_window.draw(s_delete);
-
-		m_window.display();
-	}*/
-}
-
 void ArchiveSystem::sort(const int& fieldPos)
 {
 	if (m_pImpl->m_sorted != fieldPos)
@@ -1452,7 +1186,8 @@ void ArchiveSystem::Save()
 
 	delete m_pImpl->m_prestat;
 	delete insert;
-	delete m_pImpl->m_res;
+	if (m_pImpl->m_res != nullptr)
+		delete m_pImpl->m_res;
 
 	m_pImpl->m_prestat = m_pImpl->m_con->prepareStatement("DELETE FROM books WHERE ID = ?");
 	m_pImpl->m_stat = m_pImpl->m_con->createStatement();
@@ -1471,7 +1206,8 @@ void ArchiveSystem::Save()
 
 	delete m_pImpl->m_stat;
 	delete m_pImpl->m_prestat;
-	delete m_pImpl->m_res;
+	if (m_pImpl->m_res != nullptr)
+		delete m_pImpl->m_res;
 
 	m_pImpl->m_prestat = m_pImpl->m_con->prepareStatement("UPDATE books SET name = ?, author = ?, genre = ?, pages = ?, price = ?, count = ? WHERE ID = ?");
 
@@ -1490,6 +1226,10 @@ void ArchiveSystem::Save()
 
 	delete m_pImpl->m_prestat;
 	delete m_pImpl->m_con;
+
+	m_pImpl->m_con = nullptr;
+	m_pImpl->m_stat = nullptr;
+	m_pImpl->m_res = nullptr;
 }
 
 bool ArchiveSystem::AddBook()

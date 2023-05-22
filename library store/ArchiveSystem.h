@@ -18,10 +18,12 @@ class ArchiveSystem
 	void CheckEnteringText(sf::Uint32 code);
 	void CheckMousePos();
 	void FixSize();
+	void sort(const int& fieldPos);
 	void PlaceElements();
 	void Move(const bool up);
 	void Draw();
 	void Save();
+	void Add();
 	bool AddBook();
 	void DeleteBook();
 	bool Exit();
@@ -30,8 +32,5 @@ public:
 	static ArchiveSystem* GetInstance();
 
 	void Do();
-	void Add();
-	void Edit(const int& i);
-	void sort(const int& fieldPos);
 };
 

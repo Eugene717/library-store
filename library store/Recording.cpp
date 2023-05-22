@@ -13,7 +13,7 @@ Recording::Recording(sql::ResultSet* res, const sf::Font& font)
 	Init(font);
 }
 
-Recording::Recording(int id, std::string name, std::string author, std::string genre, int countOfPages, int price, int count, sf::Font& font)
+Recording::Recording(int id, std::string name, std::string author, std::string genre, int countOfPages, float price, int count, sf::Font& font)
 	:m_id(id), m_name(name), m_author(author), m_genre(genre), m_countOfPages(countOfPages), m_price(price), m_count(count)
 {
 	Init(font);
@@ -103,18 +103,6 @@ void Recording::SoldOrBuyBook(bool sold)
 	}
 
 	m_countTx.setString(std::to_string(m_count));
-}
-
-void Recording::Edit(const std::string& name, const std::string& author, const std::string& genre, const int& countOfPages, const int& count, const int& price)
-{
-	m_name = name; m_author = author; m_genre = genre; m_countOfPages = countOfPages; m_count = count; m_price = price;
-	
-	m_nameTx.setString(name);
-	m_authorTx.setString(author);
-	m_genreTx.setString(genre);
-	m_countOfPagesTx.setString(std::to_string(countOfPages));
-	m_priceTx.setString(std::to_string(price));
-	m_countTx.setString(std::to_string(count));
 }
 
 void Recording::Move(const bool up)
