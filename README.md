@@ -23,7 +23,6 @@ Library Store is a Windows program that allows users to manage a collection of b
 ![Example Library store program image](https://github.com/Eugene717/library-store/blob/master/assets/1.png)
 ![Example Library store program image](https://github.com/Eugene717/library-store/blob/master/assets/2.png)
 ![Example Library store program image](https://github.com/Eugene717/library-store/blob/master/assets/3.png)
-![Example Library store program image](https://github.com/Eugene717/library-store/blob/master/assets/4.png)
 
 ## Contributions:
 Any contributions are welcome, also if there are problems in the process, then create an issue
